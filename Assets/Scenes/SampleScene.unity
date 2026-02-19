@@ -1071,9 +1071,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ServerTest
   baseUrl: http://localhost:8080
-  codigoSala: ad4768
-  objetoQueSeMueve: {fileID: 1289264268}
+  objetoLocal: {fileID: 1289264268}
   objetoRemoto: {fileID: 201022253}
+  intervalo: 0.1
 --- !u!4 &674511901
 Transform:
   m_ObjectHideFlags: 0

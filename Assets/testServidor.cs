@@ -9,7 +9,7 @@ public class testServidor : MonoBehaviour
     [SerializeField] private string baseUrl = "http://localhost:8080";
 
     [Header("Objetos")]
-    [SerializeField] private Transform objetoLocal;   // tu cubo que controlás
+    [SerializeField] private Transform objetoLocal;   // tu cubo que controlas
     [SerializeField] private Transform objetoRemoto;  // cubo del otro
 
     [Header("Sync")]
@@ -17,12 +17,23 @@ public class testServidor : MonoBehaviour
 
     private string codigoSala = "";
     private string miSessionId = "";
-    private string codigoIngresado = ""; // lo que tipeás para join
+    private string codigoIngresado = ""; // lo que tipeas para join
     private Coroutine loopSync;
+    private Vector3 remoteTargetPos;
+    private Quaternion remoteTargetRot;
+    private bool remoteHasTarget = false;
+
+    [Header("Smooth remoto")]
+    [SerializeField] private float smoothPos = 12f;
+    [SerializeField] private float smoothRot = 12f;
 
     void Start()
     {
         Debug.Log("testServidor activo");
+        if (objetoRemoto != null) {
+            remoteTargetPos = objetoRemoto.position;
+            remoteTargetRot = objetoRemoto.rotation;
+        }
     }
 
     void Update()
@@ -39,6 +50,19 @@ public class testServidor : MonoBehaviour
         {
             if (loopSync == null) loopSync = StartCoroutine(SyncLoop());
             else { StopCoroutine(loopSync); loopSync = null; Debug.Log("Sync detenido"); }
+        }
+        if (objetoRemoto != null && remoteHasTarget) {
+            objetoRemoto.position = Vector3.Lerp(
+                objetoRemoto.position,
+                remoteTargetPos,
+                1f - Mathf.Exp(-smoothPos * Time.deltaTime)
+            );
+
+            objetoRemoto.rotation = Quaternion.Slerp(
+                objetoRemoto.rotation,
+                remoteTargetRot,
+                1f - Mathf.Exp(-smoothRot * Time.deltaTime)
+            );
         }
     }
 
@@ -153,8 +177,9 @@ public class testServidor : MonoBehaviour
         string url = baseUrl + "/game/move/" + codigoSala;
 
         Vector3 pos = objetoLocal.position;
-        PositionData data = new PositionData(pos.x, pos.y, pos.z);
+        Quaternion rot = objetoLocal.rotation;
 
+        PositionData data = new PositionData(pos, rot);
         string json = JsonUtility.ToJson(data);
         byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
 
@@ -185,6 +210,7 @@ public class testServidor : MonoBehaviour
             if (other == null) yield break;
 
             objetoRemoto.position = new Vector3(other.x, other.y, other.z);
+            objetoRemoto.rotation = new Quaternion(other.qx, other.qy, other.qz, other.qw);
         }
     }
 
@@ -214,12 +240,20 @@ public class testServidor : MonoBehaviour
                 continue;
             }
 
-            float x = FindNumber(obj, "\"x\":");
-            float y = FindNumber(obj, "\"y\":");
-            float z = FindNumber(obj, "\"z\":");
+            float x  = FindNumber(obj, "\"x\":");
+            float y  = FindNumber(obj, "\"y\":");
+            float z  = FindNumber(obj, "\"z\":");
 
-            if (float.IsNaN(x) || float.IsNaN(y) || float.IsNaN(z)) return null;
-            return new PositionData(x, y, z);
+            float qx = FindNumber(obj, "\"qx\":");
+            float qy = FindNumber(obj, "\"qy\":");
+            float qz = FindNumber(obj, "\"qz\":");
+            float qw = FindNumber(obj, "\"qw\":");
+
+            if (float.IsNaN(x)  || float.IsNaN(y)  || float.IsNaN(z) ||
+                float.IsNaN(qx) || float.IsNaN(qy) || float.IsNaN(qz) || float.IsNaN(qw))
+                return null;
+
+            return new PositionData(x, y, z, qx, qy, qz, qw);
         }
     }
 
@@ -242,29 +276,37 @@ public class testServidor : MonoBehaviour
         return float.NaN;
     }
 
-    void OnGUI()
-    {
+    void OnGUI() {
         GUI.Label(new Rect(10, 10, 600, 25), "Host: C = Create sala | Sync: P");
-        GUI.Label(new Rect(10, 35, 600, 25), "Cliente: escribí el código (6 chars) y Enter = Join");
+        GUI.Label(new Rect(10, 35, 700, 25), "Cliente: escribí el código (6 chars) y Enter = Join");
         GUI.Label(new Rect(10, 60, 600, 25), "Código tipeado: " + codigoIngresado);
 
         GUI.Label(new Rect(10, 90, 600, 25), "Mi sala actual: " + (string.IsNullOrWhiteSpace(codigoSala) ? "(ninguna)" : codigoSala));
-        GUI.Label(new Rect(10, 115, 800, 25), "Mi sessionId: " + (string.IsNullOrWhiteSpace(miSessionId) ? "(sin asignar)" : miSessionId));
+        GUI.Label(new Rect(10, 115, 900, 25), "Mi sessionId: " + (string.IsNullOrWhiteSpace(miSessionId) ? "(sin asignar)" : miSessionId));
     }
 
     [System.Serializable]
-    public class JoinResponse
-    {
+    public class JoinResponse {
         public string codigo;
         public string sessionId;
         public int jugadores;
     }
 
     [System.Serializable]
-    public class PositionData
-    {
+    public class PositionData {
         public float x, y, z;
-        public PositionData(float x, float y, float z) { this.x = x; this.y = y; this.z = z; }
+        public float qx, qy, qz, qw;
+        // Para ENVIAR (local -> server)
+        public PositionData(Vector3 p, Quaternion q) {
+            x = p.x; y = p.y; z = p.z;
+            qx = q.x; qy = q.y; qz = q.z; qw = q.w;
+        }
+
+        // Para LEER del state (server -> local)
+        public PositionData(float x, float y, float z, float qx, float qy, float qz, float qw) {
+            this.x = x; this.y = y; this.z = z;
+            this.qx = qx; this.qy = qy; this.qz = qz; this.qw = qw;
+        }
     }
 }
 

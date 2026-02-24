@@ -295,6 +295,9 @@ public class testServidor : MonoBehaviour
         spawnPos += new Vector3(offset, 0f, 0f);
 
         GameObject go = Instantiate(playerCubePrefab, spawnPos, spawnRot);
+        var mover = go.GetComponent<Mover>();
+        if (mover != null)
+            mover.isMine = (sessionId == miSessionId);
         go.name = isMine ? $"Player(ME)_{sessionId}" : $"Player_{sessionId}";
 
         var p = new NetPlayer

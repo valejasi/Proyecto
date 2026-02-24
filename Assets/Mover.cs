@@ -5,22 +5,32 @@ public class Mover : MonoBehaviour
     public float velocidadHorizontal = 5f;
     public float velocidadVertical = 5f; // para volar
 
+    [Header("Multiplayer")]
+    public bool isMine = true; // el NetworkManager lo setea
+
     private Rigidbody rb;
     private Combustible combustible;
 
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody>();
-
-        // Para volar
-        rb.useGravity = false;
-
-        // Agarramos el componente de combustible si existe
         combustible = GetComponent<Combustible>();
+
+        if (rb == null)
+        {
+            Debug.LogError($"[{name}] No tiene Rigidbody. Agregalo al prefab del dron.");
+            enabled = false;
+            return;
+        }
+
+        rb.useGravity = false;
     }
 
     void FixedUpdate()
     {
+        // Si este dron NO es mío, no lee input ni modifica físicas.
+        if (!isMine) return;
+
         // Si hay sistema de combustible y se quedó sin, se frena
         if (combustible != null && !combustible.TieneCombustible())
         {

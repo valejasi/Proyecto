@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -8,32 +9,68 @@ public class testServidor : MonoBehaviour
     [Header("Servidor")]
     [SerializeField] private string baseUrl = "https://proyecto-y1ud.onrender.com";
 
-    [Header("Objetos")]
-    [SerializeField] private Transform objetoLocal;   // tu cubo que controlas
-    [SerializeField] private Transform objetoRemoto;  // cubo del otro
+    [Header("Prefab jugador")]
+    [SerializeField] private GameObject playerCubePrefab;
+    [SerializeField] private Transform spawnOrigin;
 
     [Header("Sync")]
     [SerializeField] private float intervalo = 0.1f;
-
-    private string codigoSala = "";
-    private string miSessionId = "";
-    private string codigoIngresado = ""; // lo que tipeas para join
-    private Coroutine loopSync;
-    private Vector3 remoteTargetPos;
-    private Quaternion remoteTargetRot;
-    private bool remoteHasTarget = false;
 
     [Header("Smooth remoto")]
     [SerializeField] private float smoothPos = 12f;
     [SerializeField] private float smoothRot = 12f;
 
+    // Sala / sesión
+    private string codigoSala = "";
+    private string miSessionId = "";
+    private string codigoIngresado = "";
+    private Coroutine loopSync;
+
+    // sessionId -> objeto en escena
+    private readonly Dictionary<string, NetPlayer> players = new Dictionary<string, NetPlayer>();
+
+    // ====== DATA STRUCTS ======
+    private class NetPlayer
+    {
+        public string sessionId;
+        public Transform tf;
+        public bool isMine;
+
+        public Vector3 targetPos;
+        public Quaternion targetRot;
+        public bool hasTarget;
+    }
+
+    [System.Serializable]
+    public class JoinResponse
+    {
+        public string codigo;
+        public string sessionId;
+        public int jugadores;
+    }
+
+    [System.Serializable]
+    public class PositionData
+    {
+        public string sessionId; // IMPORTANTE: para que el server sepa quién manda (si lo soporta)
+        public float x, y, z;
+        public float qx, qy, qz, qw;
+
+        public PositionData() {}
+
+        public PositionData(string sid, Vector3 p, Quaternion q)
+        {
+            sessionId = sid;
+            x = p.x; y = p.y; z = p.z;
+            qx = q.x; qy = q.y; qz = q.z; qw = q.w;
+        }
+    }
+
+    // ====== UNITY ======
     void Start()
     {
+        if (spawnOrigin == null) spawnOrigin = this.transform;
         Debug.Log("testServidor activo");
-        if (objetoRemoto != null) {
-            remoteTargetPos = objetoRemoto.position;
-            remoteTargetRot = objetoRemoto.rotation;
-        }
     }
 
     void Update()
@@ -52,17 +89,33 @@ public class testServidor : MonoBehaviour
             else { StopCoroutine(loopSync); loopSync = null; Debug.Log("Sync detenido"); }
         }
 
-        if (objetoRemoto != null && remoteHasTarget) {
-            objetoRemoto.position = Vector3.Lerp(objetoRemoto.position, remoteTargetPos, 1f - Mathf.Exp(-smoothPos * Time.deltaTime));
-            objetoRemoto.rotation = Quaternion.Slerp(objetoRemoto.rotation, remoteTargetRot, 1f - Mathf.Exp(-smoothRot * Time.deltaTime));
+        // Smooth remotos
+        foreach (var kv in players)
+        {
+            NetPlayer p = kv.Value;
+            if (p == null || p.tf == null) continue;
+            if (p.isMine) continue; // mi cubo no se “lerpea” desde server
+            if (!p.hasTarget) continue;
+
+            p.tf.position = Vector3.Lerp(
+                p.tf.position,
+                p.targetPos,
+                1f - Mathf.Exp(-smoothPos * Time.deltaTime)
+            );
+
+            p.tf.rotation = Quaternion.Slerp(
+                p.tf.rotation,
+                p.targetRot,
+                1f - Mathf.Exp(-smoothRot * Time.deltaTime)
+            );
         }
     }
 
+    // ====== INPUT JOIN ======
     void CapturarCodigoJoin()
     {
         foreach (char ch in Input.inputString)
         {
-            // Enter
             if (ch == '\n' || ch == '\r')
             {
                 if (!string.IsNullOrWhiteSpace(codigoIngresado))
@@ -73,7 +126,6 @@ public class testServidor : MonoBehaviour
                 continue;
             }
 
-            // Backspace
             if (ch == '\b')
             {
                 if (codigoIngresado.Length > 0)
@@ -81,14 +133,12 @@ public class testServidor : MonoBehaviour
                 continue;
             }
 
-            // Solo letras/números (códigos tipo ad4768)
             if (char.IsLetterOrDigit(ch) && codigoIngresado.Length < 6)
-            {
                 codigoIngresado += char.ToLower(ch);
-            }
         }
     }
 
+    // ====== ROOM ======
     IEnumerator CreateAndStore()
     {
         string url = baseUrl + "/game/create";
@@ -97,7 +147,6 @@ public class testServidor : MonoBehaviour
         using (UnityWebRequest req = UnityWebRequest.Get(url))
         {
             yield return req.SendWebRequest();
-
             if (req.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError("Create ERROR: " + req.error);
@@ -111,6 +160,8 @@ public class testServidor : MonoBehaviour
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
 
+            EnsurePlayerExists(miSessionId, isMine: true);
+
             Debug.Log($"CREADO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
         }
     }
@@ -123,7 +174,6 @@ public class testServidor : MonoBehaviour
         using (UnityWebRequest req = UnityWebRequest.Get(url))
         {
             yield return req.SendWebRequest();
-
             if (req.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError("Join ERROR: " + req.error);
@@ -134,8 +184,6 @@ public class testServidor : MonoBehaviour
             Debug.Log("Join JSON: " + json);
 
             JoinResponse resp = JsonUtility.FromJson<JoinResponse>(json);
-
-            // Si sala no existe, jugadores viene 0 (según tu controller)
             if (resp.jugadores == 0)
             {
                 Debug.LogError("No se pudo unir: sala no existe o código incorrecto.");
@@ -145,10 +193,13 @@ public class testServidor : MonoBehaviour
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
 
+            EnsurePlayerExists(miSessionId, isMine: true);
+
             Debug.Log($"UNIDO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
         }
     }
 
+    // ====== SYNC ======
     IEnumerator SyncLoop()
     {
         Debug.Log("Sync iniciado (P para detener).");
@@ -156,22 +207,21 @@ public class testServidor : MonoBehaviour
         while (true)
         {
             yield return SendMove();
-            yield return GetStateAndApplyOther();
+            yield return GetStateAndApplyAll();
             yield return new WaitForSeconds(intervalo);
         }
     }
 
     IEnumerator SendMove()
     {
-        if (objetoLocal == null) yield break;
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+
+        NetPlayer me = EnsurePlayerExists(miSessionId, isMine: true);
+        if (me.tf == null) yield break;
 
         string url = baseUrl + "/game/move/" + codigoSala;
 
-        Vector3 pos = objetoLocal.position;
-        Quaternion rot = objetoLocal.rotation;
-
-        PositionData data = new PositionData(pos, rot);
+        var data = new PositionData(miSessionId, me.tf.position, me.tf.rotation);
         string json = JsonUtility.ToJson(data);
         byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
 
@@ -180,14 +230,15 @@ public class testServidor : MonoBehaviour
             req.uploadHandler = new UploadHandlerRaw(bodyRaw);
             req.downloadHandler = new DownloadHandlerBuffer();
             req.SetRequestHeader("Content-Type", "application/json");
-
             yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                Debug.LogWarning("SendMove ERROR: " + req.error);
         }
     }
 
-    IEnumerator GetStateAndApplyOther()
+    IEnumerator GetStateAndApplyAll()
     {
-        if (objetoRemoto == null) yield break;
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
 
         string url = baseUrl + "/game/state/" + codigoSala;
@@ -198,56 +249,117 @@ public class testServidor : MonoBehaviour
             if (req.result != UnityWebRequest.Result.Success) yield break;
 
             string json = req.downloadHandler.text;
-            PositionData other = ExtractOtherPlayerPosition(json, miSessionId);
-            if (other == null) yield break;
 
-            remoteTargetPos = new Vector3(other.x, other.y, other.z);
-            remoteTargetRot = new Quaternion(other.qx, other.qy, other.qz, other.qw);
-            remoteHasTarget = true;
+            // Parse “a mano”: { "session1": {x..}, "session2": {x..} }
+            var dict = ExtractAllPlayerPositions(json);
+            if (dict == null) yield break;
+
+            foreach (var kv in dict)
+            {
+                string sid = kv.Key;
+                PositionData pd = kv.Value;
+
+                NetPlayer p = EnsurePlayerExists(sid, isMine: sid == miSessionId);
+
+                if (!p.isMine)
+                {
+                    p.targetPos = new Vector3(pd.x, pd.y, pd.z);
+                    p.targetRot = new Quaternion(pd.qx, pd.qy, pd.qz, pd.qw);
+                    p.hasTarget = true;
+                }
+                // Si es el mío, no lo piso (predicción local).
+            }
         }
     }
 
-    PositionData ExtractOtherPlayerPosition(string json, string myId)
+    // ====== SPAWN / REGISTRY ======
+    NetPlayer EnsurePlayerExists(string sessionId, bool isMine)
     {
+        if (players.TryGetValue(sessionId, out var existing) && existing != null && existing.tf != null)
+        {
+            existing.isMine = isMine; // por si cambia
+            return existing;
+        }
+
+        if (playerCubePrefab == null)
+        {
+            Debug.LogError("Asigná playerCubePrefab en el Inspector.");
+            return new NetPlayer { sessionId = sessionId, isMine = isMine, tf = null };
+        }
+
+        Vector3 spawnPos = spawnOrigin != null ? spawnOrigin.position : Vector3.zero;
+        Quaternion spawnRot = Quaternion.identity;
+
+        // Para que no spawneen encima, separo un poco por hash
+        float offset = (Mathf.Abs(sessionId.GetHashCode()) % 10) * 1.5f;
+        spawnPos += new Vector3(offset, 0f, 0f);
+
+        GameObject go = Instantiate(playerCubePrefab, spawnPos, spawnRot);
+        go.name = isMine ? $"Player(ME)_{sessionId}" : $"Player_{sessionId}";
+
+        var p = new NetPlayer
+        {
+            sessionId = sessionId,
+            tf = go.transform,
+            isMine = isMine,
+            targetPos = go.transform.position,
+            targetRot = go.transform.rotation,
+            hasTarget = false
+        };
+
+        players[sessionId] = p;
+        return p;
+    }
+
+    // ====== PARSER SIMPLE ======
+    Dictionary<string, PositionData> ExtractAllPlayerPositions(string json)
+    {
+        // Espera algo tipo:
+        // { "sid1": {"x":..,"y":..,"z":..,"qx":..,"qy":..,"qz":..,"qw":..}, "sid2": {...} }
         if (!json.Contains("\"x\":")) return null;
+
+        var result = new Dictionary<string, PositionData>();
 
         int idx = 0;
         while (true)
         {
             int keyStart = json.IndexOf("\"", idx);
-            if (keyStart < 0) return null;
+            if (keyStart < 0) break;
+
             int keyEnd = json.IndexOf("\"", keyStart + 1);
-            if (keyEnd < 0) return null;
+            if (keyEnd < 0) break;
 
             string sessionId = json.Substring(keyStart + 1, keyEnd - keyStart - 1);
 
             int objStart = json.IndexOf("{", keyEnd);
             int objEnd = json.IndexOf("}", objStart);
-            if (objStart < 0 || objEnd < 0) return null;
+            if (objStart < 0 || objEnd < 0) break;
 
             string obj = json.Substring(objStart, objEnd - objStart + 1);
-
-            if (sessionId == myId)
-            {
-                idx = objEnd + 1;
-                continue;
-            }
 
             float x  = FindNumber(obj, "\"x\":");
             float y  = FindNumber(obj, "\"y\":");
             float z  = FindNumber(obj, "\"z\":");
-
             float qx = FindNumber(obj, "\"qx\":");
             float qy = FindNumber(obj, "\"qy\":");
             float qz = FindNumber(obj, "\"qz\":");
             float qw = FindNumber(obj, "\"qw\":");
 
-            if (float.IsNaN(x)  || float.IsNaN(y)  || float.IsNaN(z) ||
-                float.IsNaN(qx) || float.IsNaN(qy) || float.IsNaN(qz) || float.IsNaN(qw))
-                return null;
+            if (!(float.IsNaN(x) || float.IsNaN(y) || float.IsNaN(z) ||
+                  float.IsNaN(qx) || float.IsNaN(qy) || float.IsNaN(qz) || float.IsNaN(qw)))
+            {
+                result[sessionId] = new PositionData
+                {
+                    sessionId = sessionId,
+                    x = x, y = y, z = z,
+                    qx = qx, qy = qy, qz = qz, qw = qw
+                };
+            }
 
-            return new PositionData(x, y, z, qx, qy, qz, qw);
+            idx = objEnd + 1;
         }
+
+        return result;
     }
 
     float FindNumber(string text, string key)
@@ -269,36 +381,14 @@ public class testServidor : MonoBehaviour
         return float.NaN;
     }
 
-    void OnGUI() {
+    void OnGUI()
+    {
         GUI.Label(new Rect(10, 10, 600, 25), "Host: C = Create sala | Sync: P");
         GUI.Label(new Rect(10, 35, 700, 25), "Cliente: escribí el código (6 chars) y Enter = Join");
         GUI.Label(new Rect(10, 60, 600, 25), "Código tipeado: " + codigoIngresado);
 
         GUI.Label(new Rect(10, 90, 600, 25), "Mi sala actual: " + (string.IsNullOrWhiteSpace(codigoSala) ? "(ninguna)" : codigoSala));
         GUI.Label(new Rect(10, 115, 900, 25), "Mi sessionId: " + (string.IsNullOrWhiteSpace(miSessionId) ? "(sin asignar)" : miSessionId));
-    }
-
-    [System.Serializable]
-    public class JoinResponse {
-        public string codigo;
-        public string sessionId;
-        public int jugadores;
-    }
-
-    [System.Serializable]
-    public class PositionData {
-        public float x, y, z;
-        public float qx, qy, qz, qw;
-        // Para ENVIAR (local -> server)
-        public PositionData(Vector3 p, Quaternion q) {
-            x = p.x; y = p.y; z = p.z;
-            qx = q.x; qy = q.y; qz = q.z; qw = q.w;
-        }
-
-        // Para LEER del state (server -> local)
-        public PositionData(float x, float y, float z, float qx, float qy, float qz, float qw) {
-            this.x = x; this.y = y; this.z = z;
-            this.qx = qx; this.qy = qy; this.qz = qz; this.qw = qw;
-        }
+        GUI.Label(new Rect(10, 140, 900, 25), "Players en escena: " + players.Count);
     }
 }

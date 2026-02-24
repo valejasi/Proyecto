@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 public class testServidor : MonoBehaviour
 {
     [Header("Servidor")]
-    [SerializeField] private string baseUrl = "http://localhost:8080";
+    [SerializeField] private string baseUrl = "https://proyecto-y1ud.onrender.com";
 
     [Header("Objetos")]
     [SerializeField] private Transform objetoLocal;   // tu cubo que controlas
@@ -51,18 +51,10 @@ public class testServidor : MonoBehaviour
             if (loopSync == null) loopSync = StartCoroutine(SyncLoop());
             else { StopCoroutine(loopSync); loopSync = null; Debug.Log("Sync detenido"); }
         }
-        if (objetoRemoto != null && remoteHasTarget) {
-            objetoRemoto.position = Vector3.Lerp(
-                objetoRemoto.position,
-                remoteTargetPos,
-                1f - Mathf.Exp(-smoothPos * Time.deltaTime)
-            );
 
-            objetoRemoto.rotation = Quaternion.Slerp(
-                objetoRemoto.rotation,
-                remoteTargetRot,
-                1f - Mathf.Exp(-smoothRot * Time.deltaTime)
-            );
+        if (objetoRemoto != null && remoteHasTarget) {
+            objetoRemoto.position = Vector3.Lerp(objetoRemoto.position, remoteTargetPos, 1f - Mathf.Exp(-smoothPos * Time.deltaTime));
+            objetoRemoto.rotation = Quaternion.Slerp(objetoRemoto.rotation, remoteTargetRot, 1f - Mathf.Exp(-smoothRot * Time.deltaTime));
         }
     }
 
@@ -209,8 +201,9 @@ public class testServidor : MonoBehaviour
             PositionData other = ExtractOtherPlayerPosition(json, miSessionId);
             if (other == null) yield break;
 
-            objetoRemoto.position = new Vector3(other.x, other.y, other.z);
-            objetoRemoto.rotation = new Quaternion(other.qx, other.qy, other.qz, other.qw);
+            remoteTargetPos = new Vector3(other.x, other.y, other.z);
+            remoteTargetRot = new Quaternion(other.qx, other.qy, other.qz, other.qw);
+            remoteHasTarget = true;
         }
     }
 

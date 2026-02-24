@@ -160,7 +160,14 @@ public class testServidor : MonoBehaviour
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
 
-            EnsurePlayerExists(miSessionId, isMine: true);
+            if (playerCubePrefab != null)
+            {
+                EnsurePlayerExists(miSessionId, isMine: true);
+            }
+            else
+            {
+                Debug.LogWarning("Sala creada, pero falta asignar playerCubePrefab (no spawneo jugador).");
+            }
 
             Debug.Log($"CREADO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
         }

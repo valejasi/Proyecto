@@ -5,7 +5,7 @@ public class CamaraJugador : MonoBehaviour
 {
     public Transform objetivo;   // Cube
 
-    public bool modoColocacion = true;
+    //public bool modoColocacion = true;
     public Transform cam;        // Main Camera (hija del CameraRig)
 
     [Header("Vista Arriba")]
@@ -26,37 +26,6 @@ public class CamaraJugador : MonoBehaviour
     public float suavidadRot = 12f;
 
     private bool vistaMapaActiva = false;
-
-    //detecta cuando se clique tab
-    void Update()
-    {
-        // Activar / desactivar vista mapa con TAB
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            vistaMapaActiva = !vistaMapaActiva;
-        }
-
-        // Click izquierdo para seleccionar dron
-    if (Input.GetMouseButtonDown(0))
-    {
-        Ray vRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit vHit;
-
-        if (Physics.Raycast(vRay, out vHit))
-        {
-            Dron dronSeleccionado = vHit.collider.GetComponent<Dron>();
-
-            if (dronSeleccionado != null)
-            {
-                objetivo = dronSeleccionado.transform;
-                modoColocacion = false;
-                vistaMapaActiva = false;
-
-                Debug.Log("Dron seleccionado ID: " + dronSeleccionado.id);
-            }
-        }
-    }
-    }
     
     //  ESTE REEMPLAZARIA EL Q YA ESTA
      void LateUpdate()
@@ -69,7 +38,7 @@ public class CamaraJugador : MonoBehaviour
         Vector3 rot;
 
         //TIENE Q SER IF ELSE PQ SON 3 OPCIONES
-        if (vistaMapaActiva || modoColocacion)
+        if (vistaMapaActiva)
         {
             offset = offsetMapa;
             rot = rotMapaLocal;

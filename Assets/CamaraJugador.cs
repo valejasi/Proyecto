@@ -1,8 +1,11 @@
 using UnityEngine;
 
+
 public class CamaraJugador : MonoBehaviour
 {
     public Transform objetivo;   // Cube
+
+    public bool modoColocacion = true;
     public Transform cam;        // Main Camera (hija del CameraRig)
 
     [Header("Vista Arriba")]
@@ -13,24 +16,85 @@ public class CamaraJugador : MonoBehaviour
     public Vector3 offsetApuntar = new Vector3(5f, 0f, 0f);
     public Vector3 rotApuntarLocal = new Vector3(5f, -90f, 0f);
 
+
+    [Header("Vista Mapa")]
+    public Vector3 offsetMapa = new Vector3(0f, 40f, 0f); //camara sigue arriba del jugador, 
+                                                          //hay q definir el tamanio del mapa y centrar esto
+    public Vector3 rotMapaLocal = new Vector3(90f, 0f, 0f);
+
     public float suavidadPos = 12f;
     public float suavidadRot = 12f;
 
-    void LateUpdate()
+    private bool vistaMapaActiva = false;
+
+    //detecta cuando se clique tab
+    void Update()
+    {
+        // Activar / desactivar vista mapa con TAB
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            vistaMapaActiva = !vistaMapaActiva;
+        }
+
+        // Click izquierdo para seleccionar dron
+    if (Input.GetMouseButtonDown(0))
+    {
+        Ray vRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit vHit;
+
+        if (Physics.Raycast(vRay, out vHit))
+        {
+            Dron dronSeleccionado = vHit.collider.GetComponent<Dron>();
+
+            if (dronSeleccionado != null)
+            {
+                objetivo = dronSeleccionado.transform;
+                modoColocacion = false;
+                vistaMapaActiva = false;
+
+                Debug.Log("Dron seleccionado ID: " + dronSeleccionado.id);
+            }
+        }
+    }
+    }
+    
+    //  ESTE REEMPLAZARIA EL Q YA ESTA
+     void LateUpdate()
     {
         if (objetivo == null || cam == null) return;
 
         bool apuntando = Input.GetMouseButton(1);
 
-        // Mover el RIG (CameraRig)
-        Vector3 offset = apuntando ? offsetApuntar : offsetArriba;
+        Vector3 offset;
+        Vector3 rot;
+
+        //TIENE Q SER IF ELSE PQ SON 3 OPCIONES
+        if (vistaMapaActiva || modoColocacion)
+        {
+            offset = offsetMapa;
+            rot = rotMapaLocal;
+        } 
+        else if (apuntando)
+        {
+            offset = offsetApuntar;
+            rot = rotApuntarLocal;
+        }
+        else
+        {
+            offset = offsetArriba;
+            rot = rotArribaLocal;
+        }
+
         Vector3 posDeseada = objetivo.position + offset;
         transform.position = Vector3.Lerp(transform.position, posDeseada, Time.deltaTime * suavidadPos);
 
-        // Rotar SOLO la cámara localmente (estable, no cambia al moverse)
-        Vector3 rot = apuntando ? rotApuntarLocal : rotArribaLocal;
         Quaternion rotDeseada = Quaternion.Euler(rot);
         cam.localRotation = Quaternion.Lerp(cam.localRotation, rotDeseada, Time.deltaTime * suavidadRot);
+    }
+    
+    bool VistaGeneral()
+    {
+        return vistaMapaActiva;
     }
 }
 

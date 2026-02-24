@@ -11,7 +11,7 @@ public class Apuntar : MonoBehaviour
     public float minPitch = -45f;
     public float maxPitch = 45f;
 
-    float pitchActual = 0f;
+    public float pitchActual = 0f;
 
     void Update()
     {

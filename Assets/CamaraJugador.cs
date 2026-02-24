@@ -26,6 +26,12 @@ public class CamaraJugador : MonoBehaviour
     public float suavidadRot = 12f;
 
     private bool vistaMapaActiva = false;
+<<<<<<< HEAD
+=======
+
+  
+   
+>>>>>>> 6998d8fded406d8a44f5282fa5b43f735cda4750
     
     //  ESTE REEMPLAZARIA EL Q YA ESTA
      void LateUpdate()

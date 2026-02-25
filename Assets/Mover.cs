@@ -33,7 +33,7 @@ public class Mover : MonoBehaviour
 
         if (combustible != null && !combustible.TieneCombustible())
         {
-            rb.velocity = Vector3.zero; // <-- CORREGIDO
+            rb.linearVelocity = Vector3.zero; // <-- CORREGIDO
             return;
         }
 
@@ -50,6 +50,5 @@ public class Mover : MonoBehaviour
             z * velocidadHorizontal
         );
 
-        rb.velocity = velocidad; // <-- CORREGIDO
-    }
+        rb.linearVelocity = velocidad;      }
 }

@@ -24,17 +24,16 @@ public class Mover : MonoBehaviour
         }
 
         rb.useGravity = false;
+        rb.constraints = RigidbodyConstraints.FreezeRotation; // evitar que se caiga o gire
     }
 
     void FixedUpdate()
     {
-        // Si este dron NO es mío, no lee input ni modifica físicas.
         if (!isMine) return;
 
-        // Si hay sistema de combustible y se quedó sin, se frena
         if (combustible != null && !combustible.TieneCombustible())
         {
-            rb.linearVelocity = Vector3.zero;
+            rb.velocity = Vector3.zero; // <-- CORREGIDO
             return;
         }
 
@@ -51,8 +50,6 @@ public class Mover : MonoBehaviour
             z * velocidadHorizontal
         );
 
-        rb.linearVelocity = velocidad;
+        rb.velocity = velocidad; // <-- CORREGIDO
     }
 }
-
-

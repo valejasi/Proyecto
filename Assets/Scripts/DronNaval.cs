@@ -7,6 +7,8 @@ public class DronNaval : DronBase
 
     protected override void Start()
     {
+        vidaMaxima = 2;  
+        vidaActual = vidaMaxima;
         porcentajeVision = 0.5f;     // 50%
         porcentajeVelocidad = 1f;    // 100%
         base.Start();

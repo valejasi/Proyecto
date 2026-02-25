@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 public class testServidor : MonoBehaviour
 {
     [Header("Servidor")]
-    [SerializeField] private string baseUrl = "https://192.168.1.195:8080";
+    [SerializeField] private string baseUrl = "https://proyecto-y1ud.onrender.com";
 
     [Header("CUBOS / DRONES EN LA ESCENA (ARRASTRAR ACÁ)")]
     [SerializeField] private Transform cubo1; // Player 1
@@ -62,7 +62,11 @@ public class testServidor : MonoBehaviour
         // Sync toggle
         if (Input.GetKeyDown(KeyCode.P))
         {
-            if (loopSync == null) loopSync = StartCoroutine(SyncLoop());
+            if (loopSync == null)
+            {
+                StartCoroutine(SendLoop());
+                StartCoroutine(ReceiveLoop());
+            }
             else { StopCoroutine(loopSync); loopSync = null; Debug.Log("Sync detenido"); }
         }
 
@@ -225,17 +229,23 @@ public class testServidor : MonoBehaviour
     // ==========================
     // SYNC LOOP
     // ==========================
-    IEnumerator SyncLoop()
+    IEnumerator SendLoop()
+{
+    while (true)
     {
-        Debug.Log("Sync iniciado (P para detener).");
-
-        while (true)
-        {
-            yield return SendMove();
-            yield return GetStateAndApplyOther();
-            yield return new WaitForSeconds(intervalo);
-        }
+        yield return SendMove();
+        yield return new WaitForSeconds(intervalo);
     }
+}
+
+IEnumerator ReceiveLoop()
+{
+    while (true)
+    {
+        yield return GetStateAndApplyOther();
+        yield return new WaitForSeconds(intervalo);
+    }
+}
 
     IEnumerator SendMove()
     {

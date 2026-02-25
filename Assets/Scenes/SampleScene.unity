@@ -1318,7 +1318,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e8268a5f6faf74ca308695fc05c818, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::testServidor
-  baseUrl: https://proyecto-y1ud.onrender.com
+  baseUrl: https://192.168.1.195:8080
   cubo1: {fileID: 358877306}
   cubo2: {fileID: 810904907}
   intervalo: 0.1

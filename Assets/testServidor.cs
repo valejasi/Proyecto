@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 public class testServidor : MonoBehaviour
 {
     [Header("Servidor")]
-    [SerializeField] private string baseUrl = "https://proyecto-y1ud.onrender.com";
+    [SerializeField] private string baseUrl = "https://192.168.1.195:8080";
 
     [Header("CUBOS / DRONES EN LA ESCENA (ARRASTRAR ACÁ)")]
     [SerializeField] private Transform cubo1; // Player 1

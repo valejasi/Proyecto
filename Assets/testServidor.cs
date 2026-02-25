@@ -8,9 +8,15 @@ public class testServidor : MonoBehaviour
     [Header("Servidor")]
     [SerializeField] private string baseUrl = "https://proyecto-y1ud.onrender.com";
 
-    [Header("CUBOS / DRONES EN LA ESCENA (ARRASTRAR ACÁ)")]
-    [SerializeField] private Transform cubo1; // Player 1
-    [SerializeField] private Transform cubo2; // Player 2
+    [Header("PORTADRONES (arrastrar)")]
+    [SerializeField] private Transform porta1; // host (aéreo)
+    [SerializeField] private Transform porta2; // join (naval)
+
+    [Header("DRONES P1 (AÉREO: 12)")]
+    [SerializeField] private Transform[] dronesP1;
+
+    [Header("DRONES P2 (NAVAL: 6)")]
+    [SerializeField] private Transform[] dronesP2;
 
     [Header("Sync")]
     [SerializeField] private float intervalo = 0.1f;
@@ -22,32 +28,51 @@ public class testServidor : MonoBehaviour
     // Estado sala
     private string codigoSala = "";
     private string miSessionId = "";
-    private string codigoIngresado = ""; // lo que tipeas para join
-    private Coroutine loopSync;
+    private string codigoIngresado = "";
 
-    // Slot: 1 = cubo1, 2 = cubo2
+    // Slot: 1 = host (aéreo), 2 = join (naval)
     private int miSlot = 0;
-    private Transform miCubo;
-    private Transform otroCubo;
 
-    // smoothing remoto
-    private Vector3 remoteTargetPos;
-    private Quaternion remoteTargetRot;
-    private bool remoteHasTarget = false;
+    // Coroutines
+    private Coroutine sendLoop;
+    private Coroutine receiveLoop;
+
+    // Porta: se coloca una vez
+    private bool portaEnviada = false;
+
+    // Remotos smoothing: objId -> targets
+    private readonly System.Collections.Generic.Dictionary<string, Vector3> remoteTargetPos =
+        new System.Collections.Generic.Dictionary<string, Vector3>();
+    private readonly System.Collections.Generic.Dictionary<string, Quaternion> remoteTargetRot =
+        new System.Collections.Generic.Dictionary<string, Quaternion>();
+
+    // Cache de transforms por objId
+    private readonly System.Collections.Generic.Dictionary<string, Transform> misObjetos =
+        new System.Collections.Generic.Dictionary<string, Transform>();
+    private readonly System.Collections.Generic.Dictionary<string, Transform> objetosRemotos =
+        new System.Collections.Generic.Dictionary<string, Transform>();
+
+    // Estado recibido (para UI)
+    private StateResponse lastState;
 
     void Start()
     {
         Debug.Log("testServidor activo");
 
-        if (cubo1 == null || cubo2 == null)
+        if (porta1 == null || porta2 == null)
         {
-            Debug.LogError("Asigná cubo1 y cubo2 en el Inspector (dos objetos en escena).");
+            Debug.LogError("Asigná porta1 y porta2 en el Inspector.");
             return;
         }
 
-        // default targets
-        remoteTargetPos = cubo2.position;
-        remoteTargetRot = cubo2.rotation;
+        if (dronesP1 == null || dronesP1.Length == 0)
+            Debug.LogWarning("dronesP1 está vacío (aéreo). Si es intencional, ok.");
+
+        if (dronesP2 == null || dronesP2.Length == 0)
+            Debug.LogWarning("dronesP2 está vacío (naval). Si es intencional, ok.");
+
+        // Inicializamos diccionarios con lo que haya en escena
+        RebuildObjectMapsForSlotPreview();
     }
 
     void Update()
@@ -59,28 +84,51 @@ public class testServidor : MonoBehaviour
         // Join: escribir código + Enter
         CapturarCodigoJoin();
 
-        // Sync toggle
+        // Toggle Sync
         if (Input.GetKeyDown(KeyCode.P))
         {
-            if (loopSync == null)
+            if (sendLoop == null && receiveLoop == null)
             {
-                StartCoroutine(SendLoop());
-                StartCoroutine(ReceiveLoop());
+                sendLoop = StartCoroutine(SendLoop());
+                receiveLoop = StartCoroutine(ReceiveLoop());
+                Debug.Log("Sync iniciado");
             }
-            else { StopCoroutine(loopSync); loopSync = null; Debug.Log("Sync detenido"); }
+            else
+            {
+                if (sendLoop != null) StopCoroutine(sendLoop);
+                if (receiveLoop != null) StopCoroutine(receiveLoop);
+                sendLoop = null;
+                receiveLoop = null;
+                Debug.Log("Sync detenido");
+            }
         }
 
-        // Smooth SOLO al cubo remoto
-        if (otroCubo != null && remoteHasTarget)
+        // Enviar colocación del portadron 1 sola vez (cuando ya estás en sala)
+        if (Input.GetKeyDown(KeyCode.K))
         {
-            otroCubo.position = Vector3.Lerp(otroCubo.position, remoteTargetPos, 1f - Mathf.Exp(-smoothPos * Time.deltaTime));
-            otroCubo.rotation = Quaternion.Slerp(otroCubo.rotation, remoteTargetRot, 1f - Mathf.Exp(-smoothRot * Time.deltaTime));
+            if (!portaEnviada)
+                StartCoroutine(PlacePortaOnce());
+            else
+                Debug.Log("PORTA ya fue enviado/lockeado.");
+        }
+
+        // Aplicar smoothing a TODOS los objetos remotos que existan en escena
+        foreach (var kv in objetosRemotos)
+        {
+            string objId = kv.Key;
+            Transform t = kv.Value;
+            if (t == null) continue;
+
+            if (remoteTargetPos.TryGetValue(objId, out Vector3 tp))
+            {
+                t.position = Vector3.Lerp(t.position, tp, 1f - Mathf.Exp(-smoothPos * Time.deltaTime));
+            }
+            if (remoteTargetRot.TryGetValue(objId, out Quaternion tr))
+            {
+                t.rotation = Quaternion.Slerp(t.rotation, tr, 1f - Mathf.Exp(-smoothRot * Time.deltaTime));
+            }
         }
     }
-
-    // ==========================
-    // JOIN INPUT
-    // ==========================
     void CapturarCodigoJoin()
     {
         foreach (char ch in Input.inputString)
@@ -106,9 +154,7 @@ public class testServidor : MonoBehaviour
 
             // Solo letras/números (códigos tipo ad4768)
             if (char.IsLetterOrDigit(ch) && codigoIngresado.Length < 6)
-            {
                 codigoIngresado += char.ToLower(ch);
-            }
         }
     }
 
@@ -137,7 +183,7 @@ public class testServidor : MonoBehaviour
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
 
-            // HOST = SLOT 1
+            // HOST = SLOT 1 (AÉREO)
             SetSlot(1);
 
             Debug.Log($"CREADO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
@@ -164,7 +210,6 @@ public class testServidor : MonoBehaviour
 
             JoinResponse resp = JsonUtility.FromJson<JoinResponse>(json);
 
-            // si sala no existe (según tu controller)
             if (resp.jugadores == 0)
             {
                 Debug.LogError("No se pudo unir: sala no existe o código incorrecto.");
@@ -174,7 +219,7 @@ public class testServidor : MonoBehaviour
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
 
-            // CLIENTE = SLOT 2
+            // CLIENTE = SLOT 2 (NAVAL)
             SetSlot(2);
 
             Debug.Log($"UNIDO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
@@ -184,87 +229,163 @@ public class testServidor : MonoBehaviour
     void SetSlot(int slot)
     {
         miSlot = slot;
+        portaEnviada = false; // cada vez que entrás a sala, volvés a poder colocar
 
-        if (miSlot == 1)
-        {
-            miCubo = cubo1;
-            otroCubo = cubo2;
-        }
-        else
-        {
-            miCubo = cubo2;
-            otroCubo = cubo1;
-        }
+        RebuildObjectMapsForSlot();
 
-        // Importantísimo: solo mi cubo lee input
         AplicarOwnershipMover();
 
-        // Inicializa smooth target
-        if (otroCubo != null)
+        Debug.Log($"Slot asignado: {miSlot}. Mis objetos: {misObjetos.Count}. Remotos: {objetosRemotos.Count}");
+    }
+
+    // Reconstruye maps según slot ya seteado
+    void RebuildObjectMapsForSlot()
+    {
+        misObjetos.Clear();
+        objetosRemotos.Clear();
+
+        // Porta
+        Transform miPorta = (miSlot == 1) ? porta1 : porta2;
+        Transform otroPorta = (miSlot == 1) ? porta2 : porta1;
+
+        misObjetos["PORTA"] = miPorta;
+        objetosRemotos["PORTA"] = otroPorta;
+
+        // Drones
+        Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
+        Transform[] dronesOtro = (miSlot == 1) ? dronesP2 : dronesP1;
+
+        if (misDrones != null)
         {
-            remoteTargetPos = otroCubo.position;
-            remoteTargetRot = otroCubo.rotation;
-            remoteHasTarget = true;
+            for (int i = 0; i < misDrones.Length; i++)
+            {
+                if (misDrones[i] == null) continue;
+                string objId = $"DRON_{i + 1}";
+                misObjetos[objId] = misDrones[i];
+            }
         }
+
+        if (dronesOtro != null)
+        {
+            for (int i = 0; i < dronesOtro.Length; i++)
+            {
+                if (dronesOtro[i] == null) continue;
+                string objId = $"DRON_{i + 1}";
+                objetosRemotos[objId] = dronesOtro[i];
+            }
+        }
+
+        // Inicial targets para smoothing (evita saltos raros)
+        foreach (var kv in objetosRemotos)
+        {
+            if (kv.Value == null) continue;
+            remoteTargetPos[kv.Key] = kv.Value.position;
+            remoteTargetRot[kv.Key] = kv.Value.rotation;
+        }
+    }
+
+    // Para Start(), cuando miSlot aún no existe (preview simple)
+    void RebuildObjectMapsForSlotPreview()
+    {
+        // Default a slot 1 para que no haya diccionarios vacíos al arrancar
+        miSlot = 1;
+        RebuildObjectMapsForSlot();
+        miSlot = 0;
+        misObjetos.Clear();
+        objetosRemotos.Clear();
+        remoteTargetPos.Clear();
+        remoteTargetRot.Clear();
     }
 
     void AplicarOwnershipMover()
     {
-        // Si tus drones/cubos tienen el script Mover, acá hacemos que SOLO el mío se mueva con teclado.
-        // Si no tienen Mover, no pasa nada.
-        var m1 = cubo1.GetComponent<Mover>();
-        var m2 = cubo2.GetComponent<Mover>();
+        // SOLO aplica a porta1/porta2 si tienen "Mover" (si no, no pasa nada)
+        // y también a drones si tienen Mover (opcional).
+        // En general, en tu juego real, vas a tener otro sistema de input,
+        // pero esto mantiene el comportamiento de "solo mi lado mueve lo suyo".
 
-        if (m1 != null) m1.isMine = (miSlot == 1);
-        if (m2 != null) m2.isMine = (miSlot == 2);
+        // PORTAS
+        var mP1 = porta1.GetComponent<Mover>();
+        var mP2 = porta2.GetComponent<Mover>();
+        if (mP1 != null) mP1.isMine = (miSlot == 1);
+        if (mP2 != null) mP2.isMine = (miSlot == 2);
 
-        // Recomendado: el remoto kinematic para que no lo afecte la física local
-        var rb1 = cubo1.GetComponent<Rigidbody>();
-        var rb2 = cubo2.GetComponent<Rigidbody>();
+        var rbP1 = porta1.GetComponent<Rigidbody>();
+        var rbP2 = porta2.GetComponent<Rigidbody>();
+        if (rbP1 != null) rbP1.isKinematic = (miSlot != 1);
+        if (rbP2 != null) rbP2.isKinematic = (miSlot != 2);
 
-        if (rb1 != null) rb1.isKinematic = (miSlot != 1);
-        if (rb2 != null) rb2.isKinematic = (miSlot != 2);
+        // DRONES
+        Transform[] d1 = dronesP1;
+        Transform[] d2 = dronesP2;
+
+        if (d1 != null)
+        {
+            for (int i = 0; i < d1.Length; i++)
+            {
+                if (d1[i] == null) continue;
+                var m = d1[i].GetComponent<Mover>();
+                if (m != null) m.isMine = (miSlot == 1);
+
+                var rb = d1[i].GetComponent<Rigidbody>();
+                if (rb != null) rb.isKinematic = (miSlot != 1);
+            }
+        }
+
+        if (d2 != null)
+        {
+            for (int i = 0; i < d2.Length; i++)
+            {
+                if (d2[i] == null) continue;
+                var m = d2[i].GetComponent<Mover>();
+                if (m != null) m.isMine = (miSlot == 2);
+
+                var rb = d2[i].GetComponent<Rigidbody>();
+                if (rb != null) rb.isKinematic = (miSlot != 2);
+            }
+        }
     }
-
-    // ==========================
-    // SYNC LOOP
-    // ==========================
     IEnumerator SendLoop()
-{
-    while (true)
     {
-        yield return SendMove();
-        yield return new WaitForSeconds(intervalo);
+        while (true)
+        {
+            // 1) manda batch de drones
+            yield return SendMoveBatchDrones();
+
+            yield return new WaitForSeconds(intervalo);
+        }
     }
-}
 
-IEnumerator ReceiveLoop()
-{
-    while (true)
+    IEnumerator ReceiveLoop()
     {
-        yield return GetStateAndApplyOther();
-        yield return new WaitForSeconds(intervalo);
+        while (true)
+        {
+            yield return GetStateAndApplyRemotos();
+            yield return new WaitForSeconds(intervalo);
+        }
     }
-}
-
-    IEnumerator SendMove()
+    IEnumerator PlacePortaOnce()
     {
-        if (miCubo == null) yield break;
-        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId))
+        {
+            Debug.LogWarning("No hay sala/sessionId. No se puede colocar porta.");
+            yield break;
+        }
 
-        string url = baseUrl + "/game/move/" + codigoSala;
+        if (!misObjetos.TryGetValue("PORTA", out Transform miPorta) || miPorta == null)
+        {
+            Debug.LogError("No tengo mi PORTA asignado en misObjetos.");
+            yield break;
+        }
 
-        Vector3 pos = miCubo.position;
-        Quaternion rot = miCubo.rotation;
+        string url = baseUrl + "/game/placePorta/" + codigoSala;
 
-        // Mandamos sessionId + slot por si tu backend lo quiere usar.
-        PositionData data = new PositionData(miSessionId, miSlot, pos, rot);
+        PositionData data = new PositionData(miSessionId, miSlot, "PORTA", miPorta.position, miPorta.rotation);
         string json = JsonUtility.ToJson(data);
-
-        byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
 
         using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
         {
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
             req.uploadHandler = new UploadHandlerRaw(bodyRaw);
             req.downloadHandler = new DownloadHandlerBuffer();
             req.SetRequestHeader("Content-Type", "application/json");
@@ -272,13 +393,71 @@ IEnumerator ReceiveLoop()
             yield return req.SendWebRequest();
 
             if (req.result != UnityWebRequest.Result.Success)
-                Debug.LogWarning("SendMove ERROR: " + req.error);
+            {
+                Debug.LogError("PlacePorta ERROR: " + req.error + " | " + req.downloadHandler.text);
+                yield break;
+            }
+
+            portaEnviada = true;
+            Debug.Log("PORTA enviado/lock solicitado al server.");
         }
     }
 
-    IEnumerator GetStateAndApplyOther()
+    IEnumerator SendMoveBatchDrones()
     {
-        if (otroCubo == null) yield break;
+        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+
+        // Elegimos drones según slot
+        Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
+        if (misDrones == null || misDrones.Length == 0) yield break;
+
+        // Armamos array de PositionData para drones
+        PositionData[] items = new PositionData[misDrones.Length];
+        int count = 0;
+
+        for (int i = 0; i < misDrones.Length; i++)
+        {
+            Transform t = misDrones[i];
+            if (t == null) continue;
+
+            string objId = $"DRON_{i + 1}";
+            items[count] = new PositionData(miSessionId, miSlot, objId, t.position, t.rotation);
+            count++;
+        }
+
+        if (count == 0) yield break;
+
+        // Ajuste por si había nulls en el array
+        if (count != items.Length)
+        {
+            PositionData[] trimmed = new PositionData[count];
+            for (int i = 0; i < count; i++) trimmed[i] = items[i];
+            items = trimmed;
+        }
+
+        MoveBatchRequest payload = new MoveBatchRequest { items = items };
+        string json = JsonUtility.ToJson(payload);
+
+        string url = baseUrl + "/game/moveBatch/" + codigoSala;
+
+        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
+            req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogWarning("SendMoveBatch ERROR: " + req.error + " | " + req.downloadHandler.text);
+            }
+        }
+    }
+
+    IEnumerator GetStateAndApplyRemotos()
+    {
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
 
         string url = baseUrl + "/game/state/" + codigoSala;
@@ -286,104 +465,72 @@ IEnumerator ReceiveLoop()
         using (UnityWebRequest req = UnityWebRequest.Get(url))
         {
             yield return req.SendWebRequest();
-            if (req.result != UnityWebRequest.Result.Success) yield break;
+            if (req.result != UnityWebRequest.Result.Success)
+                yield break;
 
             string json = req.downloadHandler.text;
+            if (string.IsNullOrWhiteSpace(json))
+                yield break;
 
-            // Tomamos el estado del "otro" (distinto a miSessionId)
-            PositionData other = ExtractOtherPlayerPosition(json, miSessionId);
-            if (other == null) yield break;
+            // Parse state (debe ser objeto con arrays)
+            StateResponse st = JsonUtility.FromJson<StateResponse>(json);
+            lastState = st;
 
-            remoteTargetPos = new Vector3(other.x, other.y, other.z);
-            remoteTargetRot = new Quaternion(other.qx, other.qy, other.qz, other.qw);
-            remoteHasTarget = true;
-        }
-    }
+            if (st == null || st.posiciones == null)
+                yield break;
 
-    // ==========================
-    // PARSER (como lo tenías)
-    // ==========================
-    PositionData ExtractOtherPlayerPosition(string json, string myId)
-    {
-        if (string.IsNullOrEmpty(json)) return null;
-        if (!json.Contains("\"x\":")) return null;
-
-        int idx = 0;
-        while (true)
-        {
-            int keyStart = json.IndexOf("\"", idx);
-            if (keyStart < 0) return null;
-            int keyEnd = json.IndexOf("\"", keyStart + 1);
-            if (keyEnd < 0) return null;
-
-            string sessionId = json.Substring(keyStart + 1, keyEnd - keyStart - 1);
-
-            int objStart = json.IndexOf("{", keyEnd);
-            int objEnd = json.IndexOf("}", objStart);
-            if (objStart < 0 || objEnd < 0) return null;
-
-            string obj = json.Substring(objStart, objEnd - objStart + 1);
-
-            if (sessionId == myId)
+            // Aplicar posiciones SOLO de objetos del otro jugador
+            for (int i = 0; i < st.posiciones.Length; i++)
             {
-                idx = objEnd + 1;
-                continue;
+                PositionData p = st.posiciones[i];
+
+                // ignorar mis objetos (mi sid)
+                if (p.sessionId == miSessionId)
+                    continue;
+
+                // si no tengo ese objId en escena, lo ignoro (evita errores)
+                if (string.IsNullOrWhiteSpace(p.objId))
+                    continue;
+
+                if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null)
+                    continue;
+
+                Vector3 pos = new Vector3(p.x, p.y, p.z);
+                Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);
+
+                remoteTargetPos[p.objId] = pos;
+                remoteTargetRot[p.objId] = rot;
             }
-
-            float x = FindNumber(obj, "\"x\":");
-            float y = FindNumber(obj, "\"y\":");
-            float z = FindNumber(obj, "\"z\":");
-
-            float qx = FindNumber(obj, "\"qx\":");
-            float qy = FindNumber(obj, "\"qy\":");
-            float qz = FindNumber(obj, "\"qz\":");
-            float qw = FindNumber(obj, "\"qw\":");
-
-            if (float.IsNaN(x) || float.IsNaN(y) || float.IsNaN(z) ||
-                float.IsNaN(qx) || float.IsNaN(qy) || float.IsNaN(qz) || float.IsNaN(qw))
-                return null;
-
-            // OJO: acá usamos el constructor “de lectura” (sin sid obligatorio)
-            return new PositionData(x, y, z, qx, qy, qz, qw);
         }
     }
 
-    float FindNumber(string text, string key)
-    {
-        int i = text.IndexOf(key);
-        if (i < 0) return float.NaN;
-
-        i += key.Length;
-        while (i < text.Length && text[i] == ' ') i++;
-
-        int start = i;
-        while (i < text.Length && (char.IsDigit(text[i]) || text[i] == '-' || text[i] == '.' || text[i] == 'E' || text[i] == 'e' || text[i] == '+'))
-            i++;
-
-        string num = text.Substring(start, i - start);
-        if (float.TryParse(num, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float val))
-            return val;
-
-        return float.NaN;
-    }
-
-    // ==========================
-    // GUI
-    // ==========================
     void OnGUI()
     {
-        GUI.Label(new Rect(10, 10, 800, 25), "Host: C = Create sala | Sync: P");
-        GUI.Label(new Rect(10, 35, 900, 25), "Cliente: escribí el código (6 chars) y Enter = Join");
-        GUI.Label(new Rect(10, 60, 700, 25), "Código tipeado: " + codigoIngresado);
+        GUI.Label(new Rect(10, 10, 900, 25), "Host: C = Create | Cliente: escribí código (6) + Enter = Join | Sync: P | Colocar PORTA: K");
+        GUI.Label(new Rect(10, 35, 900, 25), "Código tipeado: " + codigoIngresado);
 
-        GUI.Label(new Rect(10, 90, 700, 25), "Mi sala actual: " + (string.IsNullOrWhiteSpace(codigoSala) ? "(ninguna)" : codigoSala));
-        GUI.Label(new Rect(10, 115, 900, 25), "Mi sessionId: " + (string.IsNullOrWhiteSpace(miSessionId) ? "(sin asignar)" : miSessionId));
-        GUI.Label(new Rect(10, 140, 900, 25), "Mi slot: " + (miSlot == 0 ? "(no asignado)" : miSlot.ToString()));
+        GUI.Label(new Rect(10, 60, 900, 25), "Sala: " + (string.IsNullOrWhiteSpace(codigoSala) ? "(ninguna)" : codigoSala));
+        GUI.Label(new Rect(10, 85, 900, 25), "SessionId: " + (string.IsNullOrWhiteSpace(miSessionId) ? "(sin asignar)" : miSessionId));
+        GUI.Label(new Rect(10, 110, 900, 25), "Slot: " + (miSlot == 0 ? "(no asignado)" : miSlot.ToString()));
+        GUI.Label(new Rect(10, 135, 900, 25), "PORTA enviado: " + portaEnviada);
+
+        if (lastState != null && lastState.vidas != null)
+        {
+            int y = 165;
+            GUI.Label(new Rect(10, y, 900, 25), "VIDAS (server):");
+            y += 20;
+
+            // mostramos solo mis vidas (mi sid) para debug
+            for (int i = 0; i < lastState.vidas.Length; i++)
+            {
+                var v = lastState.vidas[i];
+                if (v.sessionId != miSessionId) continue;
+                GUI.Label(new Rect(10, y, 900, 20), $"{v.objId}: {v.vida}");
+                y += 18;
+            }
+        }
     }
 
-    // ==========================
-    // DTOs
-    // ==========================
     [System.Serializable]
     public class JoinResponse
     {
@@ -393,40 +540,62 @@ IEnumerator ReceiveLoop()
     }
 
     [System.Serializable]
-    public class PositionData
+    public class MoveBatchRequest
     {
-        // Para que el backend pueda distinguir
+        public PositionData[] items;
+    }
+
+    [System.Serializable]
+    public class StateResponse
+    {
+        public PositionData[] posiciones;
+        public VidaData[] vidas;
+        public AmmoData[] municion;
+        public ProyectilData[] proyectiles;
+    }
+
+    [System.Serializable]
+    public class VidaData
+    {
         public string sessionId;
-        public int slot; // 1 o 2 (por si lo querés usar en server)
+        public string objId;
+        public int vida;
+    }
+
+    [System.Serializable]
+    public class AmmoData
+    {
+        public string sessionId;
+        public string objId;
+        public int ammo;
+    }
+
+    [System.Serializable]
+    public class ProyectilData
+    {
+        public string id;
+        public float x, y, z;
+    }
+
+    // lo hacemos struct (struct siempre tiene constructor por defecto implícito).
+    [System.Serializable]
+    public struct PositionData
+    {
+        public string sessionId;
+        public int slot;
+        public string objId;
 
         public float x, y, z;
         public float qx, qy, qz, qw;
 
-        // ✅ Constructor NUEVO (evita el CS7036)
-        public PositionData(string sid, int slot, Vector3 p, Quaternion q)
+        public PositionData(string sid, int slot, string objId, Vector3 p, Quaternion q)
         {
             this.sessionId = sid;
             this.slot = slot;
+            this.objId = objId;
+
             x = p.x; y = p.y; z = p.z;
             qx = q.x; qy = q.y; qz = q.z; qw = q.w;
-        }
-
-        // ✅ Constructor viejo (por compatibilidad, por si te quedó algo llamándolo así)
-        public PositionData(Vector3 p, Quaternion q)
-        {
-            sessionId = "";
-            slot = 0;
-            x = p.x; y = p.y; z = p.z;
-            qx = q.x; qy = q.y; qz = q.z; qw = q.w;
-        }
-
-        // ✅ Para LEER del state (server -> local)
-        public PositionData(float x, float y, float z, float qx, float qy, float qz, float qw)
-        {
-            sessionId = "";
-            slot = 0;
-            this.x = x; this.y = y; this.z = z;
-            this.qx = qx; this.qy = qy; this.qz = qz; this.qw = qw;
         }
     }
 }

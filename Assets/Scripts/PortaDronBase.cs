@@ -4,6 +4,8 @@ public abstract class PortaDronBase : MonoBehaviour
 {
     public int vidaMaxima;
     public int dronesMaximos;
+    public bool estaSeleccionado = false;
+
 
     public GameObject prefabDron;
 
@@ -44,14 +46,17 @@ public abstract class PortaDronBase : MonoBehaviour
     {
             DetectarInput();
     }
-    protected void DetectarInput()
+   protected void DetectarInput()
     {
+        if (!estaSeleccionado)
+            return;
+
         if (Input.GetMouseButtonDown(1))
         {
             DesplegarDron();
         }
-    }
-
+    } 
+    
     protected abstract void Morir();
 
     [Header("Limites del Mapa")]

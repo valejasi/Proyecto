@@ -22,21 +22,26 @@ public class PortaDronNaval : PortaDronBase
     }
     void CorregirPosicion()
     {
-        float limiteIzquierdo = -anchoMapa / 6f;
-
-        if (transform.position.x > limiteIzquierdo)
-        {
-            Vector3 nuevaPos = transform.position;
-            nuevaPos.x = limiteIzquierdo;
-            transform.position = nuevaPos;
-        }
+        Vector3 pos = transform.position;
+        if (pos.x > 0) 
+            pos.x = 0;
+        if (pos.x < -10) 
+            pos.x = -10;
+        if (pos.z > 5)
+            pos.z = 5;
+        if (pos.z < -5) 
+            pos.z = -5;
+       
+        transform.position = pos;
     }
 
    protected override bool EstaEnZonaValida()
     {
-        float limiteIzquierdo = -anchoMapa / 6f;
-        float margen = 0.1f;
+        Vector3 pos = transform.position;
 
-        return transform.position.x <= limiteIzquierdo + margen;
+        return pos.x <= 0 &&
+            pos.x >= -10 &&
+            pos.z <= 5 &&
+            pos.z >= -5;
     }
 }

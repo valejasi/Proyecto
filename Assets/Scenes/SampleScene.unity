@@ -968,17 +968,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e8268a5f6faf74ca308695fc05c818, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::testServidor
-<<<<<<< HEAD
-  baseUrl: https://proyecto-y1ud.onrender.com
-  cubo1: {fileID: 358877306}
-  cubo2: {fileID: 810904907}
-=======
   baseUrl: https://192.168.1.195:8080
   porta1: {fileID: 0}
   porta2: {fileID: 0}
   dronesP1: []
   dronesP2: []
->>>>>>> 0b8789b8081231ff775fee1066741a105f7778b5
   intervalo: 0.1
   smoothPos: 12
   smoothRot: 12

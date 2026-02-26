@@ -18,14 +18,13 @@ public class CamaraJugador : MonoBehaviour
 
 
     [Header("Vista Mapa")]
-    public Vector3 offsetMapa = new Vector3(0f, 40f, 0f); //camara sigue arriba del jugador, 
-                                                          //hay q definir el tamanio del mapa y centrar esto
+    public Vector3 offsetMapa = new Vector3(0f, 150f, 0f);                                                          //hay q definir el tamanio del mapa y centrar esto
     public Vector3 rotMapaLocal = new Vector3(90f, 0f, 0f);
 
     public float suavidadPos = 12f;
     public float suavidadRot = 12f;
 
-    private bool vistaMapaActiva = false;
+    private bool vistaMapaActiva = true;
     
     //  ESTE REEMPLAZARIA EL Q YA ESTA
      void LateUpdate()

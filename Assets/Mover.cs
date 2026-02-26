@@ -4,6 +4,7 @@ public class Mover : MonoBehaviour
 {
     public float velocidadHorizontal = 5f;
     public float velocidadVertical = 5f; // para volar
+    public bool estaSeleccionado = false;
 
     [Header("Multiplayer")]
     public bool isMine = true; // el NetworkManager lo setea
@@ -31,18 +32,24 @@ public class Mover : MonoBehaviour
     {
         if (!isMine) return;
 
-        if (combustible != null && !combustible.TieneCombustible())
+        if (!estaSeleccionado) 
         {
-            rb.linearVelocity = Vector3.zero; // <-- CORREGIDO
+            rb.linearVelocity = Vector3.zero;
             return;
         }
 
-        float x = Input.GetAxisRaw("Horizontal"); // A/D
-        float z = Input.GetAxisRaw("Vertical");   // W/S
+        if (combustible != null && !combustible.TieneCombustible())
+        {
+            rb.linearVelocity = Vector3.zero;
+            return;
+        }
+
+        float x = Input.GetAxisRaw("Horizontal");
+        float z = Input.GetAxisRaw("Vertical");
 
         float y = 0f;
-        if (Input.GetKey(KeyCode.Space)) y = 1f;        // subir
-        if (Input.GetKey(KeyCode.LeftShift)) y = -1f;   // bajar
+        if (Input.GetKey(KeyCode.Space)) y = 1f;
+        if (Input.GetKey(KeyCode.LeftShift)) y = -1f;
 
         Vector3 velocidad = new Vector3(
             x * velocidadHorizontal,
@@ -50,5 +57,6 @@ public class Mover : MonoBehaviour
             z * velocidadHorizontal
         );
 
-        rb.linearVelocity = velocidad;      }
+        rb.linearVelocity = velocidad;
+    }
 }

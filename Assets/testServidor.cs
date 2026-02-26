@@ -71,7 +71,6 @@ public class testServidor : MonoBehaviour
         if (dronesP2 == null || dronesP2.Length == 0)
             Debug.LogWarning("dronesP2 está vacío (naval). Si es intencional, ok.");
 
-        // Inicializamos diccionarios con lo que haya en escena
         RebuildObjectMapsForSlotPreview();
     }
 
@@ -84,26 +83,7 @@ public class testServidor : MonoBehaviour
         // Join: escribir código + Enter
         CapturarCodigoJoin();
 
-        // Toggle Sync
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            if (sendLoop == null && receiveLoop == null)
-            {
-                sendLoop = StartCoroutine(SendLoop());
-                receiveLoop = StartCoroutine(ReceiveLoop());
-                Debug.Log("Sync iniciado");
-            }
-            else
-            {
-                if (sendLoop != null) StopCoroutine(sendLoop);
-                if (receiveLoop != null) StopCoroutine(receiveLoop);
-                sendLoop = null;
-                receiveLoop = null;
-                Debug.Log("Sync detenido");
-            }
-        }
-
-        // Enviar colocación del portadron 1 sola vez (cuando ya estás en sala)
+        // Colocar PORTA (por ahora con K). Luego lo cambiamos a confirmación con mouse.
         if (Input.GetKeyDown(KeyCode.K))
         {
             if (!portaEnviada)
@@ -112,7 +92,7 @@ public class testServidor : MonoBehaviour
                 Debug.Log("PORTA ya fue enviado/lockeado.");
         }
 
-        // Aplicar smoothing a TODOS los objetos remotos que existan en escena
+        // Aplicar smoothing a TODOS los objetos remotos
         foreach (var kv in objetosRemotos)
         {
             string objId = kv.Key;
@@ -120,15 +100,20 @@ public class testServidor : MonoBehaviour
             if (t == null) continue;
 
             if (remoteTargetPos.TryGetValue(objId, out Vector3 tp))
-            {
                 t.position = Vector3.Lerp(t.position, tp, 1f - Mathf.Exp(-smoothPos * Time.deltaTime));
-            }
+
             if (remoteTargetRot.TryGetValue(objId, out Quaternion tr))
-            {
                 t.rotation = Quaternion.Slerp(t.rotation, tr, 1f - Mathf.Exp(-smoothRot * Time.deltaTime));
-            }
         }
     }
+
+    void IniciarSyncAutomatico()
+    {
+        if (sendLoop == null) sendLoop = StartCoroutine(SendLoop());
+        if (receiveLoop == null) receiveLoop = StartCoroutine(ReceiveLoop());
+        Debug.Log("Sync automático iniciado");
+    }
+
     void CapturarCodigoJoin()
     {
         foreach (char ch in Input.inputString)
@@ -152,7 +137,7 @@ public class testServidor : MonoBehaviour
                 continue;
             }
 
-            // Solo letras/números (códigos tipo ad4768)
+            // Solo letras/números
             if (char.IsLetterOrDigit(ch) && codigoIngresado.Length < 6)
                 codigoIngresado += char.ToLower(ch);
         }
@@ -183,8 +168,9 @@ public class testServidor : MonoBehaviour
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
 
-            // HOST = SLOT 1 (AÉREO)
+            // HOST = SLOT 1
             SetSlot(1);
+            IniciarSyncAutomatico();
 
             Debug.Log($"CREADO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
         }
@@ -219,8 +205,9 @@ public class testServidor : MonoBehaviour
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
 
-            // CLIENTE = SLOT 2 (NAVAL)
+            // CLIENTE = SLOT 2
             SetSlot(2);
+            IniciarSyncAutomatico();
 
             Debug.Log($"UNIDO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
         }
@@ -229,20 +216,22 @@ public class testServidor : MonoBehaviour
     void SetSlot(int slot)
     {
         miSlot = slot;
-        portaEnviada = false; // cada vez que entrás a sala, volvés a poder colocar
+        portaEnviada = false;
 
         RebuildObjectMapsForSlot();
-
         AplicarOwnershipMover();
 
         Debug.Log($"Slot asignado: {miSlot}. Mis objetos: {misObjetos.Count}. Remotos: {objetosRemotos.Count}");
     }
 
-    // Reconstruye maps según slot ya seteado
     void RebuildObjectMapsForSlot()
     {
         misObjetos.Clear();
         objetosRemotos.Clear();
+
+        // 🔧 Limpia targets remotos para no arrastrar basura si reiniciás
+        remoteTargetPos.Clear();
+        remoteTargetRot.Clear();
 
         // Porta
         Transform miPorta = (miSlot == 1) ? porta1 : porta2;
@@ -275,7 +264,7 @@ public class testServidor : MonoBehaviour
             }
         }
 
-        // Inicial targets para smoothing (evita saltos raros)
+        // Inicial targets de smoothing
         foreach (var kv in objetosRemotos)
         {
             if (kv.Value == null) continue;
@@ -284,12 +273,11 @@ public class testServidor : MonoBehaviour
         }
     }
 
-    // Para Start(), cuando miSlot aún no existe (preview simple)
     void RebuildObjectMapsForSlotPreview()
     {
-        // Default a slot 1 para que no haya diccionarios vacíos al arrancar
         miSlot = 1;
         RebuildObjectMapsForSlot();
+
         miSlot = 0;
         misObjetos.Clear();
         objetosRemotos.Clear();
@@ -299,12 +287,6 @@ public class testServidor : MonoBehaviour
 
     void AplicarOwnershipMover()
     {
-        // SOLO aplica a porta1/porta2 si tienen "Mover" (si no, no pasa nada)
-        // y también a drones si tienen Mover (opcional).
-        // En general, en tu juego real, vas a tener otro sistema de input,
-        // pero esto mantiene el comportamiento de "solo mi lado mueve lo suyo".
-
-        // PORTAS
         var mP1 = porta1.GetComponent<Mover>();
         var mP2 = porta2.GetComponent<Mover>();
         if (mP1 != null) mP1.isMine = (miSlot == 1);
@@ -315,7 +297,6 @@ public class testServidor : MonoBehaviour
         if (rbP1 != null) rbP1.isKinematic = (miSlot != 1);
         if (rbP2 != null) rbP2.isKinematic = (miSlot != 2);
 
-        // DRONES
         Transform[] d1 = dronesP1;
         Transform[] d2 = dronesP2;
 
@@ -345,13 +326,12 @@ public class testServidor : MonoBehaviour
             }
         }
     }
+
     IEnumerator SendLoop()
     {
         while (true)
         {
-            // 1) manda batch de drones
             yield return SendMoveBatchDrones();
-
             yield return new WaitForSeconds(intervalo);
         }
     }
@@ -364,8 +344,12 @@ public class testServidor : MonoBehaviour
             yield return new WaitForSeconds(intervalo);
         }
     }
+
     IEnumerator PlacePortaOnce()
     {
+        // ✅ evita doble envío
+        if (portaEnviada) yield break;
+
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId))
         {
             Debug.LogWarning("No hay sala/sessionId. No se puede colocar porta.");
@@ -398,8 +382,15 @@ public class testServidor : MonoBehaviour
                 yield break;
             }
 
-            portaEnviada = true;
-            Debug.Log("PORTA enviado/lock solicitado al server.");
+            // ✅ leer OK/NO del backend
+            string resp = (req.downloadHandler.text ?? "").Trim();
+            portaEnviada = (resp == "OK");
+            Debug.Log("PlacePorta RESP: " + resp);
+
+            if (portaEnviada)
+                Debug.Log("PORTA enviado y bloqueado en server.");
+            else
+                Debug.LogWarning("El server no aceptó el PORTA (resp != OK).");
         }
     }
 
@@ -407,11 +398,12 @@ public class testServidor : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
 
-        // Elegimos drones según slot
+        // ✅ no empieza la partida real hasta colocar porta
+        if (!portaEnviada) yield break;
+
         Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
         if (misDrones == null || misDrones.Length == 0) yield break;
 
-        // Armamos array de PositionData para drones
         PositionData[] items = new PositionData[misDrones.Length];
         int count = 0;
 
@@ -427,7 +419,6 @@ public class testServidor : MonoBehaviour
 
         if (count == 0) yield break;
 
-        // Ajuste por si había nulls en el array
         if (count != items.Length)
         {
             PositionData[] trimmed = new PositionData[count];
@@ -450,9 +441,7 @@ public class testServidor : MonoBehaviour
             yield return req.SendWebRequest();
 
             if (req.result != UnityWebRequest.Result.Success)
-            {
                 Debug.LogWarning("SendMoveBatch ERROR: " + req.error + " | " + req.downloadHandler.text);
-            }
         }
     }
 
@@ -472,23 +461,19 @@ public class testServidor : MonoBehaviour
             if (string.IsNullOrWhiteSpace(json))
                 yield break;
 
-            // Parse state (debe ser objeto con arrays)
             StateResponse st = JsonUtility.FromJson<StateResponse>(json);
             lastState = st;
 
             if (st == null || st.posiciones == null)
                 yield break;
 
-            // Aplicar posiciones SOLO de objetos del otro jugador
             for (int i = 0; i < st.posiciones.Length; i++)
             {
                 PositionData p = st.posiciones[i];
 
-                // ignorar mis objetos (mi sid)
                 if (p.sessionId == miSessionId)
                     continue;
 
-                // si no tengo ese objId en escena, lo ignoro (evita errores)
                 if (string.IsNullOrWhiteSpace(p.objId))
                     continue;
 
@@ -506,7 +491,7 @@ public class testServidor : MonoBehaviour
 
     void OnGUI()
     {
-        GUI.Label(new Rect(10, 10, 900, 25), "Host: C = Create | Cliente: escribí código (6) + Enter = Join | Sync: P | Colocar PORTA: K");
+        GUI.Label(new Rect(10, 10, 1000, 25), "Host: C = Create | Cliente: escribí código (6) + Enter = Join | Colocar PORTA: K");
         GUI.Label(new Rect(10, 35, 900, 25), "Código tipeado: " + codigoIngresado);
 
         GUI.Label(new Rect(10, 60, 900, 25), "Sala: " + (string.IsNullOrWhiteSpace(codigoSala) ? "(ninguna)" : codigoSala));
@@ -520,7 +505,6 @@ public class testServidor : MonoBehaviour
             GUI.Label(new Rect(10, y, 900, 25), "VIDAS (server):");
             y += 20;
 
-            // mostramos solo mis vidas (mi sid) para debug
             for (int i = 0; i < lastState.vidas.Length; i++)
             {
                 var v = lastState.vidas[i];
@@ -531,6 +515,9 @@ public class testServidor : MonoBehaviour
         }
     }
 
+    // ==========================
+    // DTOs
+    // ==========================
     [System.Serializable]
     public class JoinResponse
     {
@@ -577,7 +564,6 @@ public class testServidor : MonoBehaviour
         public float x, y, z;
     }
 
-    // lo hacemos struct (struct siempre tiene constructor por defecto implícito).
     [System.Serializable]
     public struct PositionData
     {

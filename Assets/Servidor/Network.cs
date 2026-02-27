@@ -2,6 +2,9 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 
+//gestion de comunicacion inicial con el backend
+//sala, unirse, solicitudes y almacenamiento de info de la session
+
 public partial class Servidor
 {
     IEnumerator CreateAndStore()

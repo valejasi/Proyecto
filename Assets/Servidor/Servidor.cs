@@ -2,6 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//Orquestador del sistema de red
+//tiene la configuracion del inspectos, ciclo de vida de unity
+//coordina y sincroniza
+
 public partial class Servidor : MonoBehaviour
 {
     [Header("Servidor")]

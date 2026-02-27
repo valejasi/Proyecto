@@ -1,5 +1,7 @@
 using UnityEngine;
 
+//estructuras de datos para enviar y traer del backend
+
 public partial class Servidor
 {
     [System.Serializable]

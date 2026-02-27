@@ -1,5 +1,7 @@
 using UnityEngine;
 
+//muestra info de la sala, session, estado del server, etc
+
 public partial class Servidor
 {
     void OnGUI()

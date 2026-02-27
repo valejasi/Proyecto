@@ -3,6 +3,8 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
+//sincronizacion cliente-servidor
+
 public partial class Servidor
 {
     IEnumerator SendLoop() 

@@ -1538,10 +1538,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::testServidor
   baseUrl: https://proyecto-y1ud.onrender.com
-  porta1: {fileID: 0}
-  porta2: {fileID: 0}
-  dronesP1: []
-  dronesP2: []
+  cubo1: {fileID: 0}
+  cubo2: {fileID: 0}
   intervalo: 0.1
   smoothPos: 12
   smoothRot: 12

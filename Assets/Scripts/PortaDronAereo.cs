@@ -22,22 +22,28 @@ public class PortaDronAereo : PortaDronBase
     }
 
     void CorregirPosicion()
-    {    
-        float limiteDerecho = anchoMapa / 6f;
+    {
+        Vector3 pos = transform.position;
 
-        if (transform.position.x < limiteDerecho)
-        {
-            Vector3 nuevaPos = transform.position;
-            nuevaPos.x = limiteDerecho;
-            transform.position = nuevaPos;
-        }
+        if (pos.x < 0) 
+            pos.x = 0;
+        if (pos.x > 10) 
+            pos.x = 10;
+        if (pos.z > 5) 
+            pos.z = 5;
+        if (pos.z < -5) 
+            pos.z = -5;
+
+        transform.position = pos;
     }
 
    protected override bool EstaEnZonaValida()
     {
-        float limiteDerecho = anchoMapa / 6f;
-        float margen = 0.1f;
+        Vector3 pos = transform.position;
 
-        return transform.position.x >= limiteDerecho - margen;
+        return pos.x >= 0 &&
+            pos.x <= 10 &&
+            pos.z <= 5 &&
+            pos.z >= -5;
     }
 }

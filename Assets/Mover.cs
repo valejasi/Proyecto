@@ -44,8 +44,8 @@ public class Mover : MonoBehaviour
             return;
         }
 
-        float x = Input.GetAxisRaw("Horizontal");
-        float z = Input.GetAxisRaw("Vertical");
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
 
         float y = 0f;
         if (Input.GetKey(KeyCode.Space)) y = 1f;

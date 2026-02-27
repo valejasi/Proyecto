@@ -3,6 +3,7 @@ using UnityEngine;
 public class Seleccionador : MonoBehaviour
 {
     private GameObject objetoSeleccionado;
+    public CamaraJugador camaraJugador;
     private Color colorOriginal;
 
     void Update()
@@ -30,6 +31,15 @@ public class Seleccionador : MonoBehaviour
                 }
 
                 objetoSeleccionado = hit.collider.gameObject;
+                Debug.Log("Seleccioné un dron: " + objetoSeleccionado.name);
+
+                DronBase dron = hit.collider.GetComponentInParent<DronBase>();
+                if (dron != null && camaraJugador != null)
+                {
+                    camaraJugador.objetivo = dron.transform;
+                    camaraJugador.ActivarVistaDron();
+                    Debug.Log("Es un dron, cambiando cámara");
+                }
 
                 Renderer r = objetoSeleccionado.GetComponent<Renderer>();
                 if (r != null)
@@ -73,4 +83,6 @@ public class Seleccionador : MonoBehaviour
             }
         }
     }
+
+    
 }

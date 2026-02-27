@@ -25,6 +25,7 @@ public class CamaraJugador : MonoBehaviour
     public float suavidadRot = 12f;
 
     private bool vistaMapaActiva = true;
+    private bool vistaDron = false;
     
     //  ESTE REEMPLAZARIA EL Q YA ESTA
      void LateUpdate()
@@ -60,17 +61,11 @@ public class CamaraJugador : MonoBehaviour
         cam.localRotation = Quaternion.Lerp(cam.localRotation, rotDeseada, Time.deltaTime * suavidadRot);
     }
     
-    bool VistaGeneral()
+    public void ActivarVistaDron()
     {
-        return vistaMapaActiva;
+        vistaMapaActiva = false;
+        vistaDron = true;
+        Debug.Log("Cambie de camara" );
     }
 }
-
-
-
-
-
-
-
-
 

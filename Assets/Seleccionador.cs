@@ -14,7 +14,6 @@ public class Seleccionador : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                // DESELECCIONAR ANTERIOR
                 if (objetoSeleccionado != null)
                 {
                     Renderer rPrev = objetoSeleccionado.GetComponent<Renderer>();
@@ -30,7 +29,6 @@ public class Seleccionador : MonoBehaviour
                         portaPrev.estaSeleccionado = false;
                 }
 
-                // NUEVA SELECCIÓN
                 objetoSeleccionado = hit.collider.gameObject;
 
                 Renderer r = objetoSeleccionado.GetComponent<Renderer>();
@@ -47,6 +45,31 @@ public class Seleccionador : MonoBehaviour
                 PortaDronBase porta = objetoSeleccionado.GetComponent<PortaDronBase>();
                 if (porta != null)
                     porta.estaSeleccionado = true;
+            }
+        }
+
+        // FIJAR CON C SOLO SI ES PORTADRON
+        if (Input.GetKeyDown(KeyCode.C) && objetoSeleccionado != null)
+        {
+            PortaDronBase porta = objetoSeleccionado.GetComponent<PortaDronBase>();
+
+            if (porta != null) // 👈 solo entra si es Naval o Aéreo
+            {
+                Mover mover = objetoSeleccionado.GetComponent<Mover>();
+                if (mover != null)
+                {
+                    mover.estaSeleccionado = false;
+                    mover.enabled = false;
+                }
+
+                Rigidbody rb = objetoSeleccionado.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.isKinematic = true;
+                }
+
+                Debug.Log("PortaDron fijado con C");
             }
         }
     }

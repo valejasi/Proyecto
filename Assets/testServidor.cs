@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Text;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -54,6 +55,18 @@ public class testServidor : MonoBehaviour
 
     // Estado recibido (para UI)
     private StateResponse lastState;
+
+    private WaitForSeconds waitIntervalo;
+
+    [SerializeField] float minPos = 0.01f;
+    [SerializeField] float minRot = 0.5f;
+    private Vector3[] ultimaPos;
+    private Quaternion[] ultimaRot;
+
+    void Awake()
+    {
+        waitIntervalo = new WaitForSeconds(intervalo);
+    }
 
     void Start()
     {
@@ -332,7 +345,7 @@ public class testServidor : MonoBehaviour
         while (true)
         {
             yield return SendMoveBatchDrones();
-            yield return new WaitForSeconds(intervalo);
+            yield return waitIntervalo;
         }
     }
 
@@ -341,7 +354,7 @@ public class testServidor : MonoBehaviour
         while (true)
         {
             yield return GetStateAndApplyRemotos();
-            yield return new WaitForSeconds(intervalo);
+            yield return waitIntervalo;
         }
     }
 
@@ -394,6 +407,17 @@ public class testServidor : MonoBehaviour
         }
     }
 
+    bool DronMove (int i, Transform t)
+    {
+        if ((t.position - ultimaPos[i]).sqrMagnitude > minPos * minPos)
+            return true;
+
+        if (Quaternion.Angle(t.rotation, ultimaRot[i]) > minRot)
+            return true;
+
+        return false;
+    }
+
     IEnumerator SendMoveBatchDrones()
     {
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
@@ -404,6 +428,10 @@ public class testServidor : MonoBehaviour
         Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
         if (misDrones == null || misDrones.Length == 0) yield break;
 
+        int n = misDrones.Length;
+        ultimaPos = new Vector3[n];
+        ultimaRot = new Quaternion[n];
+        
         PositionData[] items = new PositionData[misDrones.Length];
         int count = 0;
 
@@ -411,6 +439,12 @@ public class testServidor : MonoBehaviour
         {
             Transform t = misDrones[i];
             if (t == null) continue;
+            
+            //Mandar posición solo si el dron se movió un mínimo de distancia, sino se está mandando todo el tiempo la posición de todos los drones, incluso si están quietos.
+            if (!DronMove(i, t)) continue; 
+
+            ultimaPos[i] = t.position;
+            ultimaRot[i] = t.rotation;
 
             string objId = $"DRON_{i + 1}";
             items[count] = new PositionData(miSessionId, miSlot, objId, t.position, t.rotation);

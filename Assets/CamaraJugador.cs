@@ -1,24 +1,20 @@
 using UnityEngine;
 
-
 public class CamaraJugador : MonoBehaviour
 {
-    public Transform objetivo;   // Cube
-
-    //public bool modoColocacion = true;
-    public Transform cam;        // Main Camera (hija del CameraRig)
+    public Transform objetivo;   // Dron seleccionado
+    public Transform cam;        // Main Camera 
 
     [Header("Vista Arriba")]
     public Vector3 offsetArriba = new Vector3(0f, 7f, 0f);
     public Vector3 rotArribaLocal = new Vector3(90f, 0f, 0f);
 
-    [Header("Vista Apuntar (perfil)")]
-    public Vector3 offsetApuntar = new Vector3(5f, 0f, 0f);
+    [Header("Vista Apuntar (perfil - lado derecho)")]
+    public Vector3 offsetApuntar = new Vector3(5f, 2f, 0f); 
     public Vector3 rotApuntarLocal = new Vector3(5f, -90f, 0f);
 
-
     [Header("Vista Mapa")]
-    public Vector3 offsetMapa = new Vector3(0f, 150f, 0f);                                                          //hay q definir el tamanio del mapa y centrar esto
+    public Vector3 offsetMapa = new Vector3(0f, 150f, 0f);
     public Vector3 rotMapaLocal = new Vector3(90f, 0f, 0f);
 
     public float suavidadPos = 12f;
@@ -26,46 +22,58 @@ public class CamaraJugador : MonoBehaviour
 
     private bool vistaMapaActiva = true;
     private bool vistaDron = false;
-    
-    //  ESTE REEMPLAZARIA EL Q YA ESTA
-     void LateUpdate()
+
+    void LateUpdate()
     {
         if (objetivo == null || cam == null) return;
 
         bool apuntando = Input.GetMouseButton(1);
 
-        Vector3 offset;
-        Vector3 rot;
+        Vector3 posDeseada;
+        Quaternion rotDeseada;
 
-        //TIENE Q SER IF ELSE PQ SON 3 OPCIONES
         if (vistaMapaActiva)
         {
-            offset = offsetMapa;
-            rot = rotMapaLocal;
-        } 
+            // Vista global tipo mapa
+            posDeseada = objetivo.position + offsetMapa;
+            rotDeseada = Quaternion.Euler(rotMapaLocal);
+        }
         else if (apuntando)
         {
-            offset = offsetApuntar;
-            rot = rotApuntarLocal;
+            // Vista perfil SIEMPRE del lado derecho del dron
+            posDeseada = objetivo.position
+                + objetivo.right * offsetApuntar.x
+                + objetivo.up * offsetApuntar.y
+                + objetivo.forward * offsetApuntar.z;
+
+            rotDeseada = objetivo.rotation * Quaternion.Euler(rotApuntarLocal);
         }
         else
         {
-            offset = offsetArriba;
-            rot = rotArribaLocal;
+            // Vista superior normal
+            posDeseada = objetivo.position + offsetArriba;
+            rotDeseada = Quaternion.Euler(rotArribaLocal);
         }
 
-        Vector3 posDeseada = objetivo.position + offset;
-        transform.position = Vector3.Lerp(transform.position, posDeseada, Time.deltaTime * suavidadPos);
+        //muevo la camara
+        transform.position = Vector3.Lerp(
+            transform.position,
+            posDeseada,
+            Time.deltaTime * suavidadPos
+        );
 
-        Quaternion rotDeseada = Quaternion.Euler(rot);
-        cam.localRotation = Quaternion.Lerp(cam.localRotation, rotDeseada, Time.deltaTime * suavidadRot);
+        //acomodo la rotacion de la camara
+        cam.localRotation = Quaternion.Lerp(
+            cam.localRotation,
+            rotDeseada,
+            Time.deltaTime * suavidadRot
+        );
     }
-    
+
     public void ActivarVistaDron()
     {
         vistaMapaActiva = false;
         vistaDron = true;
-        Debug.Log("Cambie de camara" );
+        Debug.Log("Cambie de camara");
     }
 }
-

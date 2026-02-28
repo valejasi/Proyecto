@@ -734,7 +734,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33f2d9951381e6c41bb60d0961140473, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Seleccionador
-  camaraJugador: {fileID: 2132233275}
+  camaraJugador: {fileID: 0}
 --- !u!4 &845049929
 Transform:
   m_ObjectHideFlags: 0

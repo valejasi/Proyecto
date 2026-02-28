@@ -8,6 +8,7 @@ public class Seleccionador : MonoBehaviour
 
     void Update()
     {
+        //detecto click izquierdo
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -15,6 +16,7 @@ public class Seleccionador : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
+                //si algo ya esta seleccionado, lo deselecciona
                 if (objetoSeleccionado != null)
                 {
                     Renderer rPrev = objetoSeleccionado.GetComponent<Renderer>();
@@ -33,6 +35,7 @@ public class Seleccionador : MonoBehaviour
                 objetoSeleccionado = hit.collider.gameObject;
                 Debug.Log("Seleccioné un dron: " + objetoSeleccionado.name);
 
+                //si es un dron, acomodo la camara
                 DronBase dron = hit.collider.GetComponentInParent<DronBase>();
                 if (dron != null && camaraJugador != null)
                 {
@@ -41,8 +44,9 @@ public class Seleccionador : MonoBehaviour
                     Debug.Log("Es un dron, cambiando cámara");
                 }
 
+                //pone el objeto en amarillo, todo menos los drones
                 Renderer r = objetoSeleccionado.GetComponent<Renderer>();
-                if (r != null)
+                if (r != null && dron == null)
                 {
                     colorOriginal = r.material.color;
                     r.material.color = Color.yellow;

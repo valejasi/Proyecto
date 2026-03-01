@@ -63,7 +63,7 @@ public class Seleccionador : MonoBehaviour
         }
 
         // FIJAR CON C SOLO SI ES PORTADRON
-        if (Input.GetKeyDown(KeyCode.C) && objetoSeleccionado != null)
+        if (Input.GetKeyDown(KeyCode.V) && objetoSeleccionado != null)
         {
             PortaDronBase porta = objetoSeleccionado.GetComponent<PortaDronBase>();
 

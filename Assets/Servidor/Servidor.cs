@@ -106,6 +106,7 @@ public partial class Servidor : MonoBehaviour
                 Debug.Log("PORTA ya fue enviado/lockeado.");
         }
 
+        //GUARDAR Y LEVANTAR PARTIDA
         if (Input.GetKeyDown(KeyCode.Alpha1)) {
             GuardarPartida();
         }

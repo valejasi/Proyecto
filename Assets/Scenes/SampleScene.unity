@@ -1194,13 +1194,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::testServidor
   baseUrl: https://proyecto-y1ud.onrender.com
-<<<<<<< HEAD
-  porta1: {fileID: 1828280382}
-  porta2: {fileID: 307677594}
-=======
+
   porta1: {fileID: 9127515555062672845}
   porta2: {fileID: 7826424516386758893}
->>>>>>> 8d49a0df4c8d89450e337fbf4c7519cb33cfac52
+  
   dronesP1: []
   dronesP2: []
   intervalo: 0.1

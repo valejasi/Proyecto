@@ -68,4 +68,42 @@ public partial class Servidor
             Debug.Log($"UNIDO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
         }
     }
+
+    //GUARDAR Y LEVANTAR PARTIDA
+    public void GuardarPartida()
+    {
+        StartCoroutine(GuardarCoroutine());
+    }
+
+    public void CargarPartida()
+    {
+        StartCoroutine(CargarCoroutine());
+    }
+
+    IEnumerator GuardarCoroutine()
+    {
+        string url = baseUrl + "/game/save/" + codigoSala;
+        UnityWebRequest request = UnityWebRequest.PostWwwForm(url, "");
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+            Debug.Log("Guardado OK");
+        else
+            Debug.LogError(request.error);
+    }
+
+    IEnumerator CargarCoroutine()
+    {
+        string url = baseUrl + "/game/load/" + codigoSala;
+        UnityWebRequest request = UnityWebRequest.Get(url);
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            Debug.Log("Cargado OK");
+            PedirEstado();
+        }
+        else
+            Debug.LogError(request.error);
+    }
 }

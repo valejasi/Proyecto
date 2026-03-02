@@ -116,6 +116,14 @@ public partial class Servidor : MonoBehaviour
                 Debug.Log("PORTA ya fue enviado/lockeado.");
         }
 
+        if (Input.GetKeyDown(KeyCode.Alpha1)) {
+            GuardarPartida();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2)) {
+            CargarPartida();
+        }
+
         // Aplicar smoothing a objetos remotos
         foreach (var kv in objetosRemotos)
         {

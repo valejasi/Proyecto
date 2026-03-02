@@ -1,8 +1,6 @@
 using UnityEngine;
-
 //define que pertenece al jugador local y remoto
 //configuraciones fisicas y de control
-
 public partial class Servidor
 {
     void IniciarSyncAutomatico()
@@ -16,10 +14,8 @@ public partial class Servidor
     {
         miSlot = slot;
         portaEnviada = false;
-
         RebuildObjectMapsForSlot();
         AplicarOwnershipMover();
-
         Debug.Log($"Slot asignado: {miSlot}. Mis objetos: {misObjetos.Count}. Remotos: {objetosRemotos.Count}");
     }
 
@@ -27,7 +23,6 @@ public partial class Servidor
     {
         miSlot = 1;
         RebuildObjectMapsForSlot();
-
         miSlot = 0;
         misObjetos.Clear();
         objetosRemotos.Clear();
@@ -45,8 +40,8 @@ public partial class Servidor
         Transform miPorta = (miSlot == 1) ? porta1 : porta2;
         Transform otroPorta = (miSlot == 1) ? porta2 : porta1;
 
-        misObjetos["PORTA"] = miPorta;
-        objetosRemotos["PORTA"] = otroPorta;
+        misObjetos[0] = miPorta;
+        objetosRemotos[0] = otroPorta;
 
         Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
         Transform[] dronesOtro = (miSlot == 1) ? dronesP2 : dronesP1;
@@ -56,7 +51,7 @@ public partial class Servidor
             for (int i = 0; i < misDrones.Length; i++)
             {
                 if (misDrones[i] == null) continue;
-                string objId = $"DRON_{i + 1}";
+                int objId = i + 1;
                 misObjetos[objId] = misDrones[i];
             }
         }
@@ -66,7 +61,7 @@ public partial class Servidor
             for (int i = 0; i < dronesOtro.Length; i++)
             {
                 if (dronesOtro[i] == null) continue;
-                string objId = $"DRON_{i + 1}";
+                int objId = i + 1;
                 objetosRemotos[objId] = dronesOtro[i];
             }
         }
@@ -83,13 +78,11 @@ public partial class Servidor
     {
         var mP1 = porta1.GetComponent<Mover>();
         var mP2 = porta2.GetComponent<Mover>();
-
         if (mP1 != null) mP1.isMine = (miSlot == 1);
         if (mP2 != null) mP2.isMine = (miSlot == 2);
 
         var rbP1 = porta1.GetComponent<Rigidbody>();
         var rbP2 = porta2.GetComponent<Rigidbody>();
-
         if (rbP1 != null) rbP1.isKinematic = (miSlot != 1);
         if (rbP2 != null) rbP2.isKinematic = (miSlot != 2);
 
@@ -101,10 +94,8 @@ public partial class Servidor
             for (int i = 0; i < d1.Length; i++)
             {
                 if (d1[i] == null) continue;
-
                 var m = d1[i].GetComponent<Mover>();
                 if (m != null) m.isMine = (miSlot == 1);
-
                 var rb = d1[i].GetComponent<Rigidbody>();
                 if (rb != null) rb.isKinematic = (miSlot != 1);
             }
@@ -115,10 +106,8 @@ public partial class Servidor
             for (int i = 0; i < d2.Length; i++)
             {
                 if (d2[i] == null) continue;
-
                 var m = d2[i].GetComponent<Mover>();
                 if (m != null) m.isMine = (miSlot == 2);
-
                 var rb = d2[i].GetComponent<Rigidbody>();
                 if (rb != null) rb.isKinematic = (miSlot != 2);
             }

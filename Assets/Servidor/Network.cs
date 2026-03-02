@@ -1,10 +1,8 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-
 //gestion de comunicacion inicial con el backend
 //sala, unirse, solicitudes y almacenamiento de info de la session
-
 public partial class Servidor
 {
     IEnumerator CreateAndStore()
@@ -15,7 +13,6 @@ public partial class Servidor
         using (UnityWebRequest req = UnityWebRequest.Get(url))
         {
             yield return req.SendWebRequest();
-
             if (req.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError("Create ERROR: " + req.error);
@@ -45,7 +42,6 @@ public partial class Servidor
         using (UnityWebRequest req = UnityWebRequest.Get(url))
         {
             yield return req.SendWebRequest();
-
             if (req.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError("Join ERROR: " + req.error);
@@ -56,7 +52,6 @@ public partial class Servidor
             Debug.Log("Join JSON: " + json);
 
             JoinResponse resp = JsonUtility.FromJson<JoinResponse>(json);
-
             if (resp.jugadores == 0)
             {
                 Debug.LogError("No se pudo unir: sala no existe o código incorrecto.");

@@ -1,7 +1,5 @@
 using UnityEngine;
-
 //estructuras de datos para enviar y traer del backend
-
 public partial class Servidor
 {
     [System.Serializable]
@@ -31,7 +29,7 @@ public partial class Servidor
     public class VidaData
     {
         public string sessionId;
-        public string objId;
+        public int objId;
         public int vida;
     }
 
@@ -39,7 +37,7 @@ public partial class Servidor
     public class AmmoData
     {
         public string sessionId;
-        public string objId;
+        public int objId;
         public int municion;
     }
 
@@ -55,17 +53,15 @@ public partial class Servidor
     {
         public string sessionId;
         public int slot;
-        public string objId;
-
+        public int objId;
         public float x, y, z;
         public float qx, qy, qz, qw;
 
-        public PositionData(string sid, int slot, string objId, Vector3 p, Quaternion q)
+        public PositionData(string sid, int slot, int objId, Vector3 p, Quaternion q)
         {
             this.sessionId = sid;
             this.slot = slot;
             this.objId = objId;
-
             x = p.x; y = p.y; z = p.z;
             qx = q.x; qy = q.y; qz = q.z; qw = q.w;
         }

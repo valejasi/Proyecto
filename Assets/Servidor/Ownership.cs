@@ -20,6 +20,19 @@ void SetSlot(int slot)
         camaraJugador.esAereo = (miSlot == 1);
     RebuildObjectMapsForSlot();
     AplicarOwnershipMover();
+    Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
+    if (misDrones != null)
+    {
+        ultimaPos = new Vector3[misDrones.Length];
+        ultimaRot = new Quaternion[misDrones.Length];
+        for (int i = 0; i < misDrones.Length; i++)
+        {
+            if (misDrones[i] == null) 
+                continue;
+            ultimaPos[i] = misDrones[i].position;
+            ultimaRot[i] = misDrones[i].rotation;
+        }
+    }
     Debug.Log($"Slot asignado: {miSlot}. Mis objetos: {misObjetos.Count}. Remotos: {objetosRemotos.Count}");
 }
 

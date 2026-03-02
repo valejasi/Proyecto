@@ -65,6 +65,14 @@ public partial class Servidor
             portaEnviada = (resp == "OK");
 
             Debug.Log("PlacePorta RESP: " + resp);
+            var rb = miPorta.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.isKinematic = true;
+                rb.constraints = RigidbodyConstraints.FreezeAll;
+            }
 
             if (portaEnviada)
                 Debug.Log("PORTA enviado y bloqueado en server.");
@@ -91,10 +99,6 @@ public partial class Servidor
 
         Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
         if (misDrones == null || misDrones.Length == 0) yield break;
-
-        int n = misDrones.Length;
-        ultimaPos = new Vector3[n];
-        ultimaRot = new Quaternion[n];
 
         PositionData[] items = new PositionData[misDrones.Length];
         int count = 0;
@@ -169,7 +173,8 @@ public partial class Servidor
             {
                 PositionData p = st.posiciones[i];
 
-                if (p.sessionId == miSessionId)
+                int slotRemoto = (miSlot == 1) ? 2 : 1;
+                if (p.slot != slotRemoto)
                     continue;
 
                 if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null)

@@ -183,4 +183,69 @@ public partial class Servidor
             }
         }
     }
+
+    IEnumerator Disparar(int objIdDisparador, Vector3 origen, Vector3 dir, float velocidad, float rangoMax, int danio)
+{
+    if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+    if (!portaEnviada) yield break;
+
+    string url = baseUrl + "/game/disparar/" + codigoSala;
+
+    Vector3 d = dir.normalized;
+
+    DisparoRequest reqBody = new DisparoRequest
+    {
+        sessionId = miSessionId,
+        objIdDisparador = objIdDisparador,
+        x = origen.x, y = origen.y, z = origen.z,
+        dx = d.x, dy = d.y, dz = d.z,
+        velocidad = velocidad,
+        rangoMax = rangoMax,
+        danio = danio
+    };
+
+    string json = JsonUtility.ToJson(reqBody);
+
+    using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+    {
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+        req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        req.SetRequestHeader("Content-Type", "application/json");
+
+        yield return req.SendWebRequest();
+
+        if (req.result != UnityWebRequest.Result.Success)
+            Debug.LogWarning("Disparar ERROR: " + req.error + " | " + req.downloadHandler.text);
+    }
+}
+
+    IEnumerator Recargar(int objIdDisparador)
+    {
+        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+        if (!portaEnviada) yield break;
+
+        string url = baseUrl + "/game/recargar/" + codigoSala;
+
+        RecargaRequest reqBody = new RecargaRequest
+        {
+            sessionId = miSessionId,
+            objIdDisparador = objIdDisparador
+        };
+
+        string json = JsonUtility.ToJson(reqBody);
+
+        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+            req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                Debug.LogWarning("Recargar ERROR: " + req.error + " | " + req.downloadHandler.text);
+        }
+    }
 }

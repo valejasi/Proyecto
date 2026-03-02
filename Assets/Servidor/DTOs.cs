@@ -66,4 +66,23 @@ public partial class Servidor
             qx = q.x; qy = q.y; qz = q.z; qw = q.w;
         }
     }
+
+    [System.Serializable]
+    public class DisparoRequest
+    {
+        public string sessionId;
+        public int objIdDisparador;
+        public float x, y, z;
+        public float dx, dy, dz;
+        public float velocidad;
+        public float rangoMax;
+        public int danio;
+    }
+
+    [System.Serializable]
+    public class RecargaRequest
+    {
+        public string sessionId;
+        public int objIdDisparador;
+    }
 }

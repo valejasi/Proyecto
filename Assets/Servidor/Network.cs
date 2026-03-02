@@ -101,7 +101,7 @@ public partial class Servidor
         if (request.result == UnityWebRequest.Result.Success)
         {
             Debug.Log("Cargado OK");
-            PedirEstado();
+            StartCoroutine(GetStateAndApplyRemotos());
         }
         else
             Debug.LogError(request.error);

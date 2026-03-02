@@ -2,13 +2,11 @@ using System.Collections;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
-
 //sincronizacion cliente-servidor
-
 public partial class Servidor
 {
-    IEnumerator SendLoop() 
-    { 
+    IEnumerator SendLoop()
+    {
         while (true)
         {
             yield return SendMoveBatchDrones();
@@ -16,7 +14,7 @@ public partial class Servidor
         }
     }
 
-    IEnumerator ReceiveLoop() 
+    IEnumerator ReceiveLoop()
     {
         while (true)
         {
@@ -25,9 +23,9 @@ public partial class Servidor
         }
     }
 
-    IEnumerator PlacePortaOnce() 
+    IEnumerator PlacePortaOnce()
     {
-         // evita doble envío
+        // evita doble envío
         if (portaEnviada) yield break;
 
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId))
@@ -36,7 +34,7 @@ public partial class Servidor
             yield break;
         }
 
-        if (!misObjetos.TryGetValue("PORTA", out Transform miPorta) || miPorta == null)
+        if (!misObjetos.TryGetValue(0, out Transform miPorta) || miPorta == null)
         {
             Debug.LogError("No tengo mi PORTA asignado en misObjetos.");
             yield break;
@@ -44,7 +42,7 @@ public partial class Servidor
 
         string url = baseUrl + "/game/placePorta/" + codigoSala;
 
-        PositionData data = new PositionData(miSessionId, miSlot, "PORTA", miPorta.position, miPorta.rotation);
+        PositionData data = new PositionData(miSessionId, miSlot, 0, miPorta.position, miPorta.rotation);
         string json = JsonUtility.ToJson(data);
 
         using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
@@ -65,6 +63,7 @@ public partial class Servidor
             // leer OK/NO del backend
             string resp = (req.downloadHandler.text ?? "").Trim();
             portaEnviada = (resp == "OK");
+
             Debug.Log("PlacePorta RESP: " + resp);
 
             if (portaEnviada)
@@ -74,19 +73,17 @@ public partial class Servidor
         }
     }
 
-    bool DronMove(int i, Transform t) 
-    { 
+    bool DronMove(int i, Transform t)
+    {
         if ((t.position - ultimaPos[i]).sqrMagnitude > minPos * minPos)
             return true;
-
         if (Quaternion.Angle(t.rotation, ultimaRot[i]) > minRot)
             return true;
-
         return false;
     }
 
-    IEnumerator SendMoveBatchDrones() 
-    { 
+    IEnumerator SendMoveBatchDrones()
+    {
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
 
         // no empieza la partida real hasta colocar porta
@@ -98,7 +95,7 @@ public partial class Servidor
         int n = misDrones.Length;
         ultimaPos = new Vector3[n];
         ultimaRot = new Quaternion[n];
-        
+
         PositionData[] items = new PositionData[misDrones.Length];
         int count = 0;
 
@@ -106,14 +103,14 @@ public partial class Servidor
         {
             Transform t = misDrones[i];
             if (t == null) continue;
-            
+
             //Mandar posición solo si el dron se movió un mínimo de distancia, sino se está mandando todo el tiempo la posición de todos los drones, incluso si están quietos.
-            if (!DronMove(i, t)) continue; 
+            if (!DronMove(i, t)) continue;
 
             ultimaPos[i] = t.position;
             ultimaRot[i] = t.rotation;
 
-            string objId = $"DRON_{i + 1}";
+            int objId = i + 1;
             items[count] = new PositionData(miSessionId, miSlot, objId, t.position, t.rotation);
             count++;
         }
@@ -146,7 +143,7 @@ public partial class Servidor
         }
     }
 
-    IEnumerator GetStateAndApplyRemotos() 
+    IEnumerator GetStateAndApplyRemotos()
     {
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
 
@@ -175,9 +172,6 @@ public partial class Servidor
                 if (p.sessionId == miSessionId)
                     continue;
 
-                if (string.IsNullOrWhiteSpace(p.objId))
-                    continue;
-
                 if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null)
                     continue;
 
@@ -187,6 +181,71 @@ public partial class Servidor
                 remoteTargetPos[p.objId] = pos;
                 remoteTargetRot[p.objId] = rot;
             }
+        }
+    }
+
+    IEnumerator Disparar(int objIdDisparador, Vector3 origen, Vector3 dir, float velocidad, float rangoMax, int danio)
+{
+    if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+    if (!portaEnviada) yield break;
+
+    string url = baseUrl + "/game/disparar/" + codigoSala;
+
+    Vector3 d = dir.normalized;
+
+    DisparoRequest reqBody = new DisparoRequest
+    {
+        sessionId = miSessionId,
+        objIdDisparador = objIdDisparador,
+        x = origen.x, y = origen.y, z = origen.z,
+        dx = d.x, dy = d.y, dz = d.z,
+        velocidad = velocidad,
+        rangoMax = rangoMax,
+        danio = danio
+    };
+
+    string json = JsonUtility.ToJson(reqBody);
+
+    using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+    {
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+        req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        req.SetRequestHeader("Content-Type", "application/json");
+
+        yield return req.SendWebRequest();
+
+        if (req.result != UnityWebRequest.Result.Success)
+            Debug.LogWarning("Disparar ERROR: " + req.error + " | " + req.downloadHandler.text);
+    }
+}
+
+    IEnumerator Recargar(int objIdDisparador)
+    {
+        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+        if (!portaEnviada) yield break;
+
+        string url = baseUrl + "/game/recargar/" + codigoSala;
+
+        RecargaRequest reqBody = new RecargaRequest
+        {
+            sessionId = miSessionId,
+            objIdDisparador = objIdDisparador
+        };
+
+        string json = JsonUtility.ToJson(reqBody);
+
+        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+            req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                Debug.LogWarning("Recargar ERROR: " + req.error + " | " + req.downloadHandler.text);
         }
     }
 }

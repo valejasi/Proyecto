@@ -1,11 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 //Orquestador del sistema de red
 //tiene la configuracion del inspectos, ciclo de vida de unity
 //coordina y sincroniza
-
 public partial class Servidor : MonoBehaviour
 {
     [Header("Servidor")]
@@ -46,22 +44,15 @@ public partial class Servidor : MonoBehaviour
     protected bool portaEnviada = false;
 
     // Remotos smoothing
-    protected readonly Dictionary<string, Vector3> remoteTargetPos =
-        new Dictionary<string, Vector3>();
-
-    protected readonly Dictionary<string, Quaternion> remoteTargetRot =
-        new Dictionary<string, Quaternion>();
+    protected readonly Dictionary<int, Vector3> remoteTargetPos = new Dictionary<int, Vector3>();
+    protected readonly Dictionary<int, Quaternion> remoteTargetRot = new Dictionary<int, Quaternion>();
 
     // Cache transforms
-    protected readonly Dictionary<string, Transform> misObjetos =
-        new Dictionary<string, Transform>();
-
-    protected readonly Dictionary<string, Transform> objetosRemotos =
-        new Dictionary<string, Transform>();
+    protected readonly Dictionary<int, Transform> misObjetos = new Dictionary<int, Transform>();
+    protected readonly Dictionary<int, Transform> objetosRemotos = new Dictionary<int, Transform>();
 
     // Estado recibido
     protected StateResponse lastState;
-
     protected WaitForSeconds waitIntervalo;
 
     [SerializeField] protected float minPos = 0.01f;
@@ -73,7 +64,6 @@ public partial class Servidor : MonoBehaviour
     // ==========================
     // UNITY LIFECYCLE
     // ==========================
-
     void Awake()
     {
         waitIntervalo = new WaitForSeconds(intervalo);
@@ -127,7 +117,7 @@ public partial class Servidor : MonoBehaviour
         // Aplicar smoothing a objetos remotos
         foreach (var kv in objetosRemotos)
         {
-            string objId = kv.Key;
+            int objId = kv.Key;
             Transform t = kv.Value;
             if (t == null) continue;
 
@@ -142,7 +132,6 @@ public partial class Servidor : MonoBehaviour
     // ==========================
     // INPUT JOIN
     // ==========================
-
     void CapturarCodigoJoin()
     {
         foreach (char ch in Input.inputString)
@@ -162,8 +151,7 @@ public partial class Servidor : MonoBehaviour
             if (ch == '\b')
             {
                 if (codigoIngresado.Length > 0)
-                    codigoIngresado =
-                        codigoIngresado.Substring(0, codigoIngresado.Length - 1);
+                    codigoIngresado = codigoIngresado.Substring(0, codigoIngresado.Length - 1);
                 continue;
             }
 

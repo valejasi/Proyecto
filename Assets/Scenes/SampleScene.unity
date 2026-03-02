@@ -1194,8 +1194,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::testServidor
   baseUrl: https://proyecto-y1ud.onrender.com
+<<<<<<< HEAD
   porta1: {fileID: 1828280382}
   porta2: {fileID: 307677594}
+=======
+  porta1: {fileID: 9127515555062672845}
+  porta2: {fileID: 7826424516386758893}
+>>>>>>> 8d49a0df4c8d89450e337fbf4c7519cb33cfac52
   dronesP1: []
   dronesP2: []
   intervalo: 0.1
@@ -1976,6 +1981,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 307677588}
   m_SourcePrefab: {fileID: 100100000, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
+--- !u!4 &7826424516386758893 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7690006507694492375, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
+  m_PrefabInstance: {fileID: 7826424516386758892}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &9127515555062672844
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2074,6 +2084,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1828280377}
   m_SourcePrefab: {fileID: 100100000, guid: bb0be04510dd00e4db5f580b06b1fc01, type: 3}
+--- !u!4 &9127515555062672845 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6322940614611512651, guid: bb0be04510dd00e4db5f580b06b1fc01, type: 3}
+  m_PrefabInstance: {fileID: 9127515555062672844}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

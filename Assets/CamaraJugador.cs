@@ -5,6 +5,9 @@ public class CamaraJugador : MonoBehaviour
     public Transform objetivo;   // Dron seleccionado
     public Transform cam;        // Main Camera 
 
+    [Header("Tipo Jugador")]
+    public bool esAereo = false;   // <- activar si es jugador aéreo
+
     [Header("Vista Arriba")]
     public Vector3 offsetArriba = new Vector3(0f, 7f, 0f);
     public Vector3 rotArribaLocal = new Vector3(90f, 0f, 0f);
@@ -32,37 +35,35 @@ public class CamaraJugador : MonoBehaviour
         Vector3 posDeseada;
         Quaternion rotDeseada;
 
+        //  factor 50% más si es aéreo
+        float factor = esAereo ? 1.5f : 1f;
+
         if (vistaMapaActiva)
         {
-            // Vista global tipo mapa
-            posDeseada = objetivo.position + offsetMapa;
+            posDeseada = objetivo.position + offsetMapa * factor;
             rotDeseada = Quaternion.Euler(rotMapaLocal);
         }
         else if (apuntando)
         {
-            // Vista perfil SIEMPRE del lado derecho del dron
             posDeseada = objetivo.position
-                + objetivo.right * offsetApuntar.x
-                + objetivo.up * offsetApuntar.y
-                + objetivo.forward * offsetApuntar.z;
+                + objetivo.right * (offsetApuntar.x * factor)
+                + objetivo.up * (offsetApuntar.y * factor)
+                + objetivo.forward * (offsetApuntar.z * factor);
 
             rotDeseada = objetivo.rotation * Quaternion.Euler(rotApuntarLocal);
         }
         else
         {
-            // Vista superior normal
-            posDeseada = objetivo.position + offsetArriba;
+            posDeseada = objetivo.position + offsetArriba * factor;
             rotDeseada = Quaternion.Euler(rotArribaLocal);
         }
 
-        //muevo la camara
         transform.position = Vector3.Lerp(
             transform.position,
             posDeseada,
             Time.deltaTime * suavidadPos
         );
 
-        //acomodo la rotacion de la camara
         cam.localRotation = Quaternion.Lerp(
             cam.localRotation,
             rotDeseada,

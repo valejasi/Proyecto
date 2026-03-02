@@ -40,7 +40,7 @@ public partial class Servidor
     {
         public string sessionId;
         public string objId;
-        public int ammo;
+        public int municion;
     }
 
     [System.Serializable]

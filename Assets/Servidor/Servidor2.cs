@@ -4,7 +4,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class Servidor : MonoBehaviour
+public class Servidor2 : MonoBehaviour
 {
     [Header("Servidor")]
     [SerializeField] private string baseUrl = "https://proyecto-y1ud.onrender.com";

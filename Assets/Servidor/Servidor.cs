@@ -26,6 +26,12 @@ public partial class Servidor : MonoBehaviour
     [SerializeField] private float smoothPos = 12f;
     [SerializeField] private float smoothRot = 12f;
 
+    [Header("Prefabs")]
+    [SerializeField] private GameObject dronPrefab;
+    [SerializeField] private GameObject portaDronPrefab;
+
+    private StateResponse lastState;
+
     // ==========================
     // Estado sala
     // ==========================
@@ -51,8 +57,7 @@ public partial class Servidor : MonoBehaviour
     protected readonly Dictionary<int, Transform> misObjetos = new Dictionary<int, Transform>();
     protected readonly Dictionary<int, Transform> objetosRemotos = new Dictionary<int, Transform>();
 
-    // Estado recibido
-    protected StateResponse lastState;
+
     protected WaitForSeconds waitIntervalo;
 
     [SerializeField] protected float minPos = 0.01f;

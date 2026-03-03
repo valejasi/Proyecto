@@ -74,15 +74,11 @@ public partial class Servidor
     {
         StartCoroutine(GuardarCoroutine());
     }
-
-    public void CargarPartida()
-    {
-        StartCoroutine(CargarCoroutine());
-    }
-
     IEnumerator GuardarCoroutine()
     {
         string url = baseUrl + "/game/save/" + codigoSala;
+        Debug.Log("Codigo sala: " + codigoSala);
+        Debug.Log("URL FINAL: " + url);
         UnityWebRequest request = UnityWebRequest.PostWwwForm(url, "");
         yield return request.SendWebRequest();
 
@@ -92,18 +88,97 @@ public partial class Servidor
             Debug.LogError(request.error);
     }
 
-    IEnumerator CargarCoroutine()
+     public void CargarPartida()
+    {
+        StartCoroutine(CargarYReconstruir());
+    }
+
+    IEnumerator CargarYReconstruir()
     {
         string url = baseUrl + "/game/load/" + codigoSala;
-        UnityWebRequest request = UnityWebRequest.Get(url);
-        yield return request.SendWebRequest();
 
-        if (request.result == UnityWebRequest.Result.Success)
+        using (UnityWebRequest req = UnityWebRequest.Get(url))
         {
-            Debug.Log("Cargado OK");
-            StartCoroutine(GetStateAndApplyRemotos());
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Error Load: " + req.error);
+                yield break;
+            }
         }
-        else
-            Debug.LogError(request.error);
+
+        // 🔥 después del load traemos estado
+        yield return StartCoroutine(GetStateCompletoYReconstruir());
+    }
+
+    IEnumerator GetStateCompletoYReconstruir()
+    {
+         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId))
+            yield break;
+
+        string url = baseUrl + "/game/state/" + codigoSala;
+
+        using (UnityWebRequest req = UnityWebRequest.Get(url))
+        {
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                yield break;
+
+            string json = req.downloadHandler.text;
+            if (string.IsNullOrWhiteSpace(json))
+                yield break;
+
+            StateResponse st = JsonUtility.FromJson<StateResponse>(json);
+            lastState = st;
+
+            if (st == null || st.posiciones == null)
+                yield break;
+
+            foreach (PositionData p in st.posiciones)
+            {
+                if (p.sessionId == miSessionId)
+                    continue;
+
+                if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null)
+                {
+                    CrearObjetoRemoto(p);
+                    continue;
+                }
+
+                Vector3 pos = new Vector3(p.x, p.y, p.z);
+                Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);
+
+                remoteTargetPos[p.objId] = pos;
+                remoteTargetRot[p.objId] = rot;
+            }
+        }
+    }
+
+    //crear objeto remoto
+      void CrearObjetoRemoto(PositionData p)
+    {
+        GameObject prefab = null;
+
+        if (p.tipo == "DRON")
+            prefab = dronPrefab;
+        else if (p.tipo == "PORTA")
+            prefab = portaDronPrefab;
+
+        if (prefab == null)
+        {
+            Debug.LogWarning("Prefab no asignado para tipo: " + p.tipo);
+            return;
+        }
+
+        Vector3 pos = new Vector3(p.x, p.y, p.z);
+        Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);
+
+        GameObject obj = Instantiate(prefab, pos, rot);
+
+        objetosRemotos[p.objId] = obj.transform;
+        remoteTargetPos[p.objId] = pos;
+        remoteTargetRot[p.objId] = rot;
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 //estructuras de datos para enviar y traer del backend
 public partial class Servidor
@@ -54,6 +55,7 @@ public partial class Servidor
         public string sessionId;
         public int slot;
         public int objId;
+        public string tipo;
         public float x, y, z;
         public float qx, qy, qz, qw;
 
@@ -62,8 +64,17 @@ public partial class Servidor
             this.sessionId = sid;
             this.slot = slot;
             this.objId = objId;
+            this.tipo = "";
+
             x = p.x; y = p.y; z = p.z;
             qx = q.x; qy = q.y; qz = q.z; qw = q.w;
+        }
+
+        // 🔹 Constructor nuevo (opcional)
+        public PositionData(string sid, int slot, int objId, Vector3 p, Quaternion q, string tipo)
+            : this(sid, slot, objId, p, q)
+        {
+            this.tipo = tipo;
         }
     }
 

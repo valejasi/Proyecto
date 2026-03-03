@@ -1192,31 +1192,13 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b8e8268a5f6faf74ca308695fc05c818, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Servidor
-  camaraJugador: {fileID: 2132233275}
+  m_EditorClassIdentifier: Assembly-CSharp::testServidor
+  camaraJugador: {fileID: 0}
   baseUrl: https://proyecto-y1ud.onrender.com
   porta1: {fileID: 1828280382}
   porta2: {fileID: 307677594}
-  dronesP1:
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 6322940614611512651, guid: bb0be04510dd00e4db5f580b06b1fc01, type: 3}
-  dronesP2:
-  - {fileID: 7690006507694492375, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
-  - {fileID: 7690006507694492375, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
-  - {fileID: 7690006507694492375, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
-  - {fileID: 7690006507694492375, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
-  - {fileID: 7690006507694492375, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
-  - {fileID: 7690006507694492375, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
+  dronesP1: []
+  dronesP2: []
   intervalo: 0.1
   smoothPos: 12
   smoothRot: 12

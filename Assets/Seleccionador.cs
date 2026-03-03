@@ -83,7 +83,7 @@ public class Seleccionador : MonoBehaviour
                     rb.isKinematic = true;
                 }
 
-                Debug.Log("PortaDron fijado con C");
+                Debug.Log("PortaDron fijado con V");
             }
         }
     }

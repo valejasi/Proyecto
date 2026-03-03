@@ -7,8 +7,10 @@ public partial class Servidor
 {
     IEnumerator SendLoop()
     {
+        Debug.Log("🔥 SendLoop INICIADO");
         while (true)
         {
+            Debug.Log("🟡 SendLoop tick");
             yield return SendMoveBatchDrones();
             yield return waitIntervalo;
         }
@@ -42,8 +44,17 @@ public partial class Servidor
 
         string url = baseUrl + "/game/placePorta/" + codigoSala;
 
-        PositionData data = new PositionData(miSessionId, miSlot, 0, miPorta.position, miPorta.rotation);
-        string json = JsonUtility.ToJson(data);
+        //el primero en conectarse es aereo, id del portadron 0
+        //el segundo es naval, id del dron = 1
+        int portaId = (miSlot == 1) ? 0 : 1;
+
+        PositionData data = new PositionData(
+            miSessionId,
+            miSlot,
+            portaId,
+            miPorta.position,
+            miPorta.rotation
+        );        string json = JsonUtility.ToJson(data);
 
         using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
         {
@@ -62,7 +73,9 @@ public partial class Servidor
 
             // leer OK/NO del backend
             string resp = (req.downloadHandler.text ?? "").Trim();
-            portaEnviada = (resp == "OK");
+            Debug.Log("PlacePorta RESP RAW: [" + resp + "]");
+            portaEnviada = resp.ToUpper().Contains("OK");
+            Debug.Log("portaEnviada ahora es: " + portaEnviada);
 
             Debug.Log("PlacePorta RESP: " + resp);
             var rb = miPorta.GetComponent<Rigidbody>();
@@ -103,6 +116,10 @@ public partial class Servidor
         PositionData[] items = new PositionData[misDrones.Length];
         int count = 0;
 
+        //los portadrones tienen el objId 0 y 1
+        //drones navales objId = [2...7]
+        //drones aereos  objId = [8... 19]
+        int baseId = (miSlot == 1) ? 8 : 2;
         for (int i = 0; i < misDrones.Length; i++)
         {
             Transform t = misDrones[i];
@@ -114,7 +131,7 @@ public partial class Servidor
             ultimaPos[i] = t.position;
             ultimaRot[i] = t.rotation;
 
-            int objId = i + 1;
+            int objId = baseId + 1;
             items[count] = new PositionData(miSessionId, miSlot, objId, t.position, t.rotation);
             count++;
         }
@@ -128,8 +145,15 @@ public partial class Servidor
             items = trimmed;
         }
 
+
         MoveBatchRequest payload = new MoveBatchRequest { items = items };
         string json = JsonUtility.ToJson(payload);
+
+        // DEBUG: Confirmo que estoy enviando movimiento al servidor
+        Debug.Log("ENVIANDO MOVE BATCH -> Sala: " + codigoSala + 
+                " | Session: " + miSessionId + 
+                " | Cantidad objetos: " + items.Length + 
+                " | JSON: " + json);
 
         string url = baseUrl + "/game/moveBatch/" + codigoSala;
 
@@ -171,8 +195,10 @@ public partial class Servidor
 
             for (int i = 0; i < st.posiciones.Length; i++)
             {
+
                 PositionData p = st.posiciones[i];
 
+                
                 int slotRemoto = (miSlot == 1) ? 2 : 1;
                 if (p.slot != slotRemoto)
                     continue;
@@ -182,6 +208,12 @@ public partial class Servidor
 
                 Vector3 pos = new Vector3(p.x, p.y, p.z);
                 Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);
+
+                // DEBUG: Confirmo que recibí movimiento remoto
+                Debug.Log("RECIBIDO REMOTO -> ObjId: " + p.objId + 
+                        " | Slot: " + p.slot + 
+                        " | Pos: " + pos);
+
 
                 remoteTargetPos[p.objId] = pos;
                 remoteTargetRot[p.objId] = rot;

@@ -76,7 +76,6 @@ public partial class Servidor : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("testServidor activo");
 
         if (porta1 == null || porta2 == null)
         {
@@ -103,7 +102,7 @@ public partial class Servidor : MonoBehaviour
         CapturarCodigoJoin();
 
         // Colocar PORTA
-        if (Input.GetKeyDown(KeyCode.K))
+        if (Input.GetKeyDown(KeyCode.V))
         {
             if (!portaEnviada)
                 StartCoroutine(PlacePortaOnce());

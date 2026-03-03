@@ -1193,6 +1193,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e8268a5f6faf74ca308695fc05c818, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::testServidor
+  camaraJugador: {fileID: 0}
   baseUrl: https://proyecto-y1ud.onrender.com
   porta1: {fileID: 1828280382}
   porta2: {fileID: 307677594}
@@ -1773,6 +1774,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CamaraJugador
   objetivo: {fileID: 1289264268}
   cam: {fileID: 330585546}
+  esAereo: 0
   offsetArriba: {x: 0, y: 7, z: 0}
   rotArribaLocal: {x: 90, y: 0, z: 0}
   offsetApuntar: {x: 5, y: 0, z: 0}

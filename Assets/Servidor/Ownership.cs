@@ -10,14 +10,31 @@ public partial class Servidor
         Debug.Log("Sync automático iniciado");
     }
 
-    void SetSlot(int slot)
+    [SerializeField] private CamaraJugador camaraJugador;  
+
+void SetSlot(int slot)
+{
+    miSlot = slot;
+    portaEnviada = false;
+    if (camaraJugador != null)
+        camaraJugador.esAereo = (miSlot == 1);
+    RebuildObjectMapsForSlot();
+    AplicarOwnershipMover();
+    Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
+    if (misDrones != null)
     {
-        miSlot = slot;
-        portaEnviada = false;
-        RebuildObjectMapsForSlot();
-        AplicarOwnershipMover();
-        Debug.Log($"Slot asignado: {miSlot}. Mis objetos: {misObjetos.Count}. Remotos: {objetosRemotos.Count}");
+        ultimaPos = new Vector3[misDrones.Length];
+        ultimaRot = new Quaternion[misDrones.Length];
+        for (int i = 0; i < misDrones.Length; i++)
+        {
+            if (misDrones[i] == null) 
+                continue;
+            ultimaPos[i] = misDrones[i].position;
+            ultimaRot[i] = misDrones[i].rotation;
+        }
     }
+    Debug.Log($"Slot asignado: {miSlot}. Mis objetos: {misObjetos.Count}. Remotos: {objetosRemotos.Count}");
+}
 
     void RebuildObjectMapsForSlotPreview()
     {

@@ -23,74 +23,75 @@ public partial class Servidor
             yield return waitIntervalo;
         }
     }
+    private bool portaYaColocado = false;
+    public IEnumerator PlacePortaOnce()
+{
+    // Esperar a tener sala + sesión
+    while (string.IsNullOrEmpty(codigoSala) || string.IsNullOrEmpty(miSessionId))
+        yield return null;
 
-    IEnumerator PlacePortaOnce()
+    // Asegurar que el mapa de objetos ya esté armado
+    if (misObjetos == null) yield break;
+
+    int portaId = (miSlot == 1) ? 0 : 1;
+
+    // Esperar a que el porta exista en misObjetos
+    float timeout = 5f;
+    while (timeout > 0f && (!misObjetos.TryGetValue(portaId, out Transform miPorta) || miPorta == null))
     {
-        // evita doble envío
-        if (portaEnviada) yield break;
+        timeout -= Time.deltaTime;
+        yield return null;
+    }
 
-        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId))
+    if (!misObjetos.TryGetValue(portaId, out Transform porta) || porta == null)
+    {
+        Debug.LogError("No tengo mi PORTA asignado en misObjetos.");
+        yield break;
+    }
+
+    // Si ya lo mandaste antes, no lo vuelvas a mandar
+    if (portaYaColocado) yield break;
+
+    // Armar payload
+    Vector3 p = porta.position;
+    Quaternion r = porta.rotation;
+
+    string json =
+        "{" +
+        "\"sessionId\":\"" + miSessionId + "\"," +
+        "\"slot\":" + miSlot + "," +
+        "\"objId\":" + portaId + "," +
+        "\"x\":" + p.x.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) + "," +
+        "\"y\":" + p.y.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) + "," +
+        "\"z\":" + p.z.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) + "," +
+        "\"qx\":" + r.x.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) + "," +
+        "\"qy\":" + r.y.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) + "," +
+        "\"qz\":" + r.z.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) + "," +
+        "\"qw\":" + r.w.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) +
+        "}";
+
+    byte[] body = Encoding.UTF8.GetBytes(json);
+
+    // Endpoint (AJUSTÁ SOLO ESTO si tu ruta es distinta)
+    string url = baseUrl.TrimEnd('/') + "/placePorta/" + codigoSala;
+
+    using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+    {
+        req.uploadHandler = new UploadHandlerRaw(body);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        req.SetRequestHeader("Content-Type", "application/json");
+
+        yield return req.SendWebRequest();
+
+        if (req.result != UnityWebRequest.Result.Success)
         {
-            Debug.LogWarning("No hay sala/sessionId. No se puede colocar porta.");
+            Debug.LogError("PlacePortaOnce error: " + req.error + " | " + req.downloadHandler.text);
             yield break;
-        }
-
-        if (!misObjetos.TryGetValue(0, out Transform miPorta) || miPorta == null)
-        {
-            Debug.LogError("No tengo mi PORTA asignado en misObjetos.");
-            yield break;
-        }
-
-        string url = baseUrl + "/game/placePorta/" + codigoSala;
-
-        //el primero en conectarse es aereo, id del portadron 0
-        //el segundo es naval, id del dron = 1
-        int portaId = (miSlot == 1) ? 0 : 1;
-
-        PositionData data = new PositionData(
-            miSessionId,
-            miSlot,
-            portaId,
-            miPorta.position,
-            miPorta.rotation
-        );        string json = JsonUtility.ToJson(data);
-
-        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
-        {
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
-            req.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            req.downloadHandler = new DownloadHandlerBuffer();
-            req.SetRequestHeader("Content-Type", "application/json");
-
-            yield return req.SendWebRequest();
-
-            if (req.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError("PlacePorta ERROR: " + req.error + " | " + req.downloadHandler.text);
-                yield break;
-            }
-
-            // leer OK/NO del backend
-            string resp = (req.downloadHandler.text ?? "").Trim();
-            Debug.Log("PlacePorta RESP RAW: [" + resp + "]");
-            portaEnviada = resp.ToUpper().Contains("OK");
-            Debug.Log("portaEnviada ahora es: " + portaEnviada);
-
-            Debug.Log("PlacePorta RESP: " + resp);
-            var rb = miPorta.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-                rb.isKinematic = true;
-            }
-
-            if (portaEnviada)
-                Debug.Log("PORTA enviado y bloqueado en server.");
-            else
-                Debug.LogWarning("El server no aceptó el PORTA (resp != OK).");
         }
     }
+
+    portaYaColocado = true;
+}
 
     bool DronMove(int i, Transform t)
     {

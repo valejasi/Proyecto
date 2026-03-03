@@ -73,28 +73,33 @@ public partial class Servidor
         Transform miPorta = (miSlot == 1) ? porta1 : porta2;
         Transform otroPorta = (miSlot == 1) ? porta2 : porta1;
 
-        misObjetos[0] = miPorta;
-        objetosRemotos[0] = otroPorta;
+        int miPortaId = (miSlot == 1) ? 0 : 1;
+        int otroPortaId = (miSlot == 1) ? 1 : 0;
+
+        misObjetos[miPortaId] = miPorta;
+        objetosRemotos[otroPortaId] = otroPorta;
 
         Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
         Transform[] dronesOtro = (miSlot == 1) ? dronesP2 : dronesP1;
 
         if (misDrones != null)
         {
+            int baseId = (miSlot == 1) ? 8 : 2;
             for (int i = 0; i < misDrones.Length; i++)
             {
                 if (misDrones[i] == null) continue;
-                int objId = i + 1;
+                int objId = baseId + i;
                 misObjetos[objId] = misDrones[i];
             }
         }
 
         if (dronesOtro != null)
         {
+            int baseIdOtro = (miSlot == 1) ? 2 : 8;
             for (int i = 0; i < dronesOtro.Length; i++)
             {
                 if (dronesOtro[i] == null) continue;
-                int objId = i + 1;
+                int objId = baseIdOtro + i;
                 objetosRemotos[objId] = dronesOtro[i];
             }
         }

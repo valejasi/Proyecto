@@ -80,8 +80,9 @@ public partial class Servidor
             var rb = miPorta.GetComponent<Rigidbody>();
             if (rb != null)
             {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
                 rb.isKinematic = true;
-                rb.constraints = RigidbodyConstraints.FreezeAll;
             }
 
             if (portaEnviada)
@@ -219,40 +220,40 @@ public partial class Servidor
     }
 
     IEnumerator Disparar(int objIdDisparador, Vector3 origen, Vector3 dir, float velocidad, float rangoMax, int danio)
-{
-    if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
-    if (!portaEnviada) yield break;
-
-    string url = baseUrl + "/game/disparar/" + codigoSala;
-
-    Vector3 d = dir.normalized;
-
-    DisparoRequest reqBody = new DisparoRequest
     {
-        sessionId = miSessionId,
-        objIdDisparador = objIdDisparador,
-        x = origen.x, y = origen.y, z = origen.z,
-        dx = d.x, dy = d.y, dz = d.z,
-        velocidad = velocidad,
-        rangoMax = rangoMax,
-        danio = danio
-    };
+        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+        if (!portaEnviada) yield break;
 
-    string json = JsonUtility.ToJson(reqBody);
+        string url = baseUrl + "/game/disparar/" + codigoSala;
 
-    using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
-    {
-        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
-        req.uploadHandler = new UploadHandlerRaw(bodyRaw);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.SetRequestHeader("Content-Type", "application/json");
+        Vector3 d = dir.normalized;
 
-        yield return req.SendWebRequest();
+        DisparoRequest reqBody = new DisparoRequest
+        {
+            sessionId = miSessionId,
+            objIdDisparador = objIdDisparador,
+            x = origen.x, y = origen.y, z = origen.z,
+            dx = d.x, dy = d.y, dz = d.z,
+            velocidad = velocidad,
+            rangoMax = rangoMax,
+            danio = danio
+        };
 
-        if (req.result != UnityWebRequest.Result.Success)
-            Debug.LogWarning("Disparar ERROR: " + req.error + " | " + req.downloadHandler.text);
+        string json = JsonUtility.ToJson(reqBody);
+
+        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+            req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                Debug.LogWarning("Disparar ERROR: " + req.error + " | " + req.downloadHandler.text);
+        }
     }
-}
 
     IEnumerator Recargar(int objIdDisparador)
     {

@@ -283,4 +283,24 @@ public partial class Servidor
                 Debug.LogWarning("Recargar ERROR: " + req.error + " | " + req.downloadHandler.text);
         }
     }
+
+    [SerializeField] private float remoteLerp = 15f;
+
+    void LateUpdate()
+    {
+        if (objetosRemotos == null) return;
+
+        foreach (var kv in objetosRemotos)
+        {
+            int id = kv.Key;
+            Transform t = kv.Value;
+            if (t == null) continue;
+
+            if (remoteTargetPos.TryGetValue(id, out Vector3 tp))
+                t.position = Vector3.Lerp(t.position, tp, Time.deltaTime * remoteLerp);
+
+            if (remoteTargetRot.TryGetValue(id, out Quaternion tr))
+                t.rotation = Quaternion.Slerp(t.rotation, tr, Time.deltaTime * remoteLerp);
+        }
+    }
 }

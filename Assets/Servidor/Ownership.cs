@@ -50,6 +50,7 @@ public partial class Servidor
 
         //TESTEO DE CONEXION inicio el multiplayer automatico
         IniciarSyncAutomatico();
+        StartCoroutine(PlacePortaOnce());
     }
 
     void RebuildObjectMapsForSlotPreview()
@@ -64,53 +65,53 @@ public partial class Servidor
     }
 
     void RebuildObjectMapsForSlot()
+{
+    misObjetos.Clear();
+    objetosRemotos.Clear();
+    remoteTargetPos.Clear();
+    remoteTargetRot.Clear();
+
+    Transform miPorta = (miSlot == 1) ? porta1 : porta2;
+    Transform otroPorta = (miSlot == 1) ? porta2 : porta1;
+
+    int miPortaId = (miSlot == 1) ? 0 : 1;
+    int otroPortaId = (miSlot == 1) ? 1 : 0;
+
+    misObjetos[miPortaId] = miPorta;
+    objetosRemotos[otroPortaId] = otroPorta;
+
+    Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
+    Transform[] dronesOtro = (miSlot == 1) ? dronesP2 : dronesP1;
+
+    if (misDrones != null)
     {
-        misObjetos.Clear();
-        objetosRemotos.Clear();
-        remoteTargetPos.Clear();
-        remoteTargetRot.Clear();
-
-        Transform miPorta = (miSlot == 1) ? porta1 : porta2;
-        Transform otroPorta = (miSlot == 1) ? porta2 : porta1;
-
-        int miPortaId = (miSlot == 1) ? 0 : 1;
-        int otroPortaId = (miSlot == 1) ? 1 : 0;
-
-        misObjetos[miPortaId] = miPorta;
-        objetosRemotos[otroPortaId] = otroPorta;
-
-        Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
-        Transform[] dronesOtro = (miSlot == 1) ? dronesP2 : dronesP1;
-
-        if (misDrones != null)
+        int baseId = (miSlot == 1) ? 8 : 2;
+        for (int i = 0; i < misDrones.Length; i++)
         {
-            int baseId = (miSlot == 1) ? 8 : 2;
-            for (int i = 0; i < misDrones.Length; i++)
-            {
-                if (misDrones[i] == null) continue;
-                int objId = baseId + i;
-                misObjetos[objId] = misDrones[i];
-            }
-        }
-
-        if (dronesOtro != null)
-        {
-            int baseIdOtro = (miSlot == 1) ? 2 : 8;
-            for (int i = 0; i < dronesOtro.Length; i++)
-            {
-                if (dronesOtro[i] == null) continue;
-                int objId = baseIdOtro + i;
-                objetosRemotos[objId] = dronesOtro[i];
-            }
-        }
-
-        foreach (var kv in objetosRemotos)
-        {
-            if (kv.Value == null) continue;
-            remoteTargetPos[kv.Key] = kv.Value.position;
-            remoteTargetRot[kv.Key] = kv.Value.rotation;
+            if (misDrones[i] == null) continue;
+            int objId = baseId + i;
+            misObjetos[objId] = misDrones[i];
         }
     }
+
+    if (dronesOtro != null)
+    {
+        int baseIdOtro = (miSlot == 1) ? 2 : 8;
+        for (int i = 0; i < dronesOtro.Length; i++)
+        {
+            if (dronesOtro[i] == null) continue;
+            int objId = baseIdOtro + i;
+            objetosRemotos[objId] = dronesOtro[i];
+        }
+    }
+
+    foreach (var kv in objetosRemotos)
+    {
+        if (kv.Value == null) continue;
+        remoteTargetPos[kv.Key] = kv.Value.position;
+        remoteTargetRot[kv.Key] = kv.Value.rotation;
+    }
+}
 
     void AplicarOwnershipMover()
     {

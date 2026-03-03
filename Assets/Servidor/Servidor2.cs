@@ -21,8 +21,11 @@ public class Servidor2 : MonoBehaviour
     [Header("Portadrones")]
     [SerializeField] private Transform miPorta;
     [SerializeField] private Transform portaRemoto;
+    [SerializeField] private int miObjIdPorta = 0;
+    [SerializeField] private bool colocarPortaAlIniciar = true;
 
     private WaitForSeconds waitIntervalo;
+    private bool portaColocada = false;
 
     [System.Serializable]
     private class JoinResponse
@@ -39,13 +42,9 @@ public class Servidor2 : MonoBehaviour
         public int slot;
         public string tipo;
         public int objId;
-        public float x;
-        public float y;
-        public float z;
-        public float rx;
-        public float ry;
-        public float rz;
-        public float rw;
+
+        public float x, y, z;
+        public float qx, qy, qz, qw;
     }
 
     [System.Serializable]
@@ -63,8 +62,7 @@ public class Servidor2 : MonoBehaviour
     {
         if (autoCrearEnStart)
             StartCoroutine(CrearSala());
-
-        if (!autoCrearEnStart && !string.IsNullOrWhiteSpace(codigoSala) && !string.IsNullOrWhiteSpace(miSessionId))
+        else if (!string.IsNullOrWhiteSpace(codigoSala) && !string.IsNullOrWhiteSpace(miSessionId))
             IniciarLoops();
     }
 
@@ -82,10 +80,6 @@ public class Servidor2 : MonoBehaviour
         }
     }
 
-    public void SetBaseUrl(string url) => baseUrl = url;
-    public void SetPortas(Transform mi, Transform remoto) { miPorta = mi; portaRemoto = remoto; }
-    public void SetCodigoParaUnirse(string codigo) => codigoParaUnirse = codigo;
-
     IEnumerator CrearSala()
     {
         string url = $"{baseUrl}/game/create";
@@ -102,22 +96,13 @@ public class Servidor2 : MonoBehaviour
 
             JoinResponse resp;
             try { resp = JsonUtility.FromJson<JoinResponse>(req.downloadHandler.text); }
-            catch
-            {
-                Debug.LogError("CREATE ERROR: No pude parsear JoinResponse");
-                yield break;
-            }
-
-            if (resp == null || string.IsNullOrWhiteSpace(resp.codigo) || string.IsNullOrWhiteSpace(resp.sessionId))
-            {
-                Debug.LogError("CREATE ERROR: respuesta inválida");
-                yield break;
-            }
+            catch { Debug.LogError("CREATE ERROR: parse JoinResponse"); yield break; }
 
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
 
-            Debug.Log($"SALA CREADA ✅  codigo={codigoSala}  sessionId={miSessionId}  jugadores={resp.cantidad}");
+            Debug.Log($"SALA CREADA ✅ codigo={codigoSala} sessionId={miSessionId} jugadores={resp.cantidad}");
+
             IniciarLoops();
         }
     }
@@ -138,22 +123,13 @@ public class Servidor2 : MonoBehaviour
 
             JoinResponse resp;
             try { resp = JsonUtility.FromJson<JoinResponse>(req.downloadHandler.text); }
-            catch
-            {
-                Debug.LogError("JOIN ERROR: No pude parsear JoinResponse");
-                yield break;
-            }
-
-            if (resp == null || string.IsNullOrWhiteSpace(resp.codigo) || string.IsNullOrWhiteSpace(resp.sessionId))
-            {
-                Debug.LogError("JOIN ERROR: respuesta inválida");
-                yield break;
-            }
+            catch { Debug.LogError("JOIN ERROR: parse JoinResponse"); yield break; }
 
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
 
-            Debug.Log($"ME UNI ✅  codigo={codigoSala}  sessionId={miSessionId}  jugadores={resp.cantidad}");
+            Debug.Log($"ME UNI ✅ codigo={codigoSala} sessionId={miSessionId} jugadores={resp.cantidad}");
+
             IniciarLoops();
         }
     }
@@ -168,15 +144,85 @@ public class Servidor2 : MonoBehaviour
     {
         while (true)
         {
+            if (colocarPortaAlIniciar && !portaColocada)
+                yield return PlacePortaOnce();
+
+            yield return SendMiPortaMove();
             yield return GetStateAndAplicarPortaRemoto();
+
             yield return waitIntervalo;
+        }
+    }
+
+    IEnumerator PlacePortaOnce()
+    {
+        if (portaColocada) yield break;
+        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+        if (miPorta == null) yield break;
+        if (miObjIdPorta <= 0) yield break;
+
+        Position pos = new Position();
+        pos.sessionId = miSessionId;
+        pos.objId = miObjIdPorta;
+        pos.x = miPorta.position.x;
+        pos.y = miPorta.position.y;
+        pos.z = miPorta.position.z;
+
+        Quaternion q = miPorta.rotation;
+        pos.qx = q.x; pos.qy = q.y; pos.qz = q.z; pos.qw = q.w;
+
+        string json = JsonUtility.ToJson(pos);
+        string url = $"{baseUrl}/game/placePorta/{codigoSala}";
+
+        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+        {
+            req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                yield break;
+
+            if (req.downloadHandler.text == "OK")
+            {
+                portaColocada = true;
+                Debug.Log("PORTA COLOCADO ✅");
+            }
+        }
+    }
+
+    IEnumerator SendMiPortaMove()
+    {
+        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+        if (miPorta == null) yield break;
+        if (!portaColocada) yield break;
+
+        Position pos = new Position();
+        pos.sessionId = miSessionId;
+        pos.objId = miObjIdPorta;
+        pos.x = miPorta.position.x;
+        pos.y = miPorta.position.y;
+        pos.z = miPorta.position.z;
+
+        Quaternion q = miPorta.rotation;
+        pos.qx = q.x; pos.qy = q.y; pos.qz = q.z; pos.qw = q.w;
+
+        string json = "{\"items\":[" + JsonUtility.ToJson(pos) + "]}";
+        string url = $"{baseUrl}/game/moveBatch/{codigoSala}";
+
+        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+        {
+            req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            yield return req.SendWebRequest();
         }
     }
 
     IEnumerator GetStateAndAplicarPortaRemoto()
     {
-        if (string.IsNullOrWhiteSpace(codigoSala))
-            yield break;
+        if (string.IsNullOrWhiteSpace(codigoSala)) yield break;
 
         string url = $"{baseUrl}/game/state/{codigoSala}";
         using (UnityWebRequest req = UnityWebRequest.Get(url))
@@ -184,19 +230,16 @@ public class Servidor2 : MonoBehaviour
             req.downloadHandler = new DownloadHandlerBuffer();
             yield return req.SendWebRequest();
 
-            if (req.result != UnityWebRequest.Result.Success)
-                yield break;
+            if (req.result != UnityWebRequest.Result.Success) yield break;
 
             string json = req.downloadHandler.text;
-            if (string.IsNullOrWhiteSpace(json) || json.StartsWith("\""))
-                yield break;
+            if (string.IsNullOrWhiteSpace(json) || json.StartsWith("\"")) yield break;
 
             RespuestaEstado estado;
             try { estado = JsonUtility.FromJson<RespuestaEstado>(json); }
             catch { yield break; }
 
-            if (estado == null || estado.posiciones == null)
-                yield break;
+            if (estado == null || estado.posiciones == null) yield break;
 
             for (int i = 0; i < estado.posiciones.Length; i++)
             {
@@ -207,7 +250,7 @@ public class Servidor2 : MonoBehaviour
                 if (portaRemoto == null) continue;
 
                 portaRemoto.position = new Vector3(p.x, p.y, p.z);
-                portaRemoto.rotation = Quaternion.Euler(p.rx, p.ry, p.rz);
+                portaRemoto.rotation = new Quaternion(p.qx, p.qy, p.qz, p.qw);
                 break;
             }
         }

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -13,6 +12,11 @@ public class Servidor2 : MonoBehaviour
     [Header("Sala")]
     [SerializeField] private string codigoSala = "";
     [SerializeField] private string miSessionId = "";
+    [SerializeField] private bool autoCrearEnStart = true;
+
+    [Header("Join por teclado")]
+    [SerializeField] private bool habilitarJoinConEnter = true;
+    [SerializeField] private string codigoParaUnirse = "";
 
     [Header("Portadrones")]
     [SerializeField] private Transform miPorta;
@@ -55,25 +59,103 @@ public class Servidor2 : MonoBehaviour
         waitIntervalo = new WaitForSeconds(intervalo);
     }
 
-    public void SetBaseUrl(string url)
+    void Start()
     {
-        baseUrl = url;
+        if (autoCrearEnStart)
+            StartCoroutine(CrearSala());
+
+        if (!autoCrearEnStart && !string.IsNullOrWhiteSpace(codigoSala) && !string.IsNullOrWhiteSpace(miSessionId))
+            IniciarLoops();
     }
 
-    public void SetCodigoSala(string codigo)
+    void Update()
     {
-        codigoSala = codigo;
+        if (!habilitarJoinConEnter) return;
+
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+            if (!string.IsNullOrWhiteSpace(codigoParaUnirse))
+            {
+                StopAllCoroutines();
+                StartCoroutine(UnirseSala(codigoParaUnirse.Trim()));
+            }
+        }
     }
 
-    public void SetSessionId(string sessionId)
+    public void SetBaseUrl(string url) => baseUrl = url;
+    public void SetPortas(Transform mi, Transform remoto) { miPorta = mi; portaRemoto = remoto; }
+    public void SetCodigoParaUnirse(string codigo) => codigoParaUnirse = codigo;
+
+    IEnumerator CrearSala()
     {
-        miSessionId = sessionId;
+        string url = $"{baseUrl}/game/create";
+        using (UnityWebRequest req = UnityWebRequest.Get(url))
+        {
+            req.downloadHandler = new DownloadHandlerBuffer();
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"CREATE ERROR: {req.error}");
+                yield break;
+            }
+
+            JoinResponse resp;
+            try { resp = JsonUtility.FromJson<JoinResponse>(req.downloadHandler.text); }
+            catch
+            {
+                Debug.LogError("CREATE ERROR: No pude parsear JoinResponse");
+                yield break;
+            }
+
+            if (resp == null || string.IsNullOrWhiteSpace(resp.codigo) || string.IsNullOrWhiteSpace(resp.sessionId))
+            {
+                Debug.LogError("CREATE ERROR: respuesta inválida");
+                yield break;
+            }
+
+            codigoSala = resp.codigo;
+            miSessionId = resp.sessionId;
+
+            Debug.Log($"SALA CREADA ✅  codigo={codigoSala}  sessionId={miSessionId}  jugadores={resp.cantidad}");
+            IniciarLoops();
+        }
     }
 
-    public void SetPortas(Transform mi, Transform remoto)
+    IEnumerator UnirseSala(string codigo)
     {
-        miPorta = mi;
-        portaRemoto = remoto;
+        string url = $"{baseUrl}/game/join/{codigo}";
+        using (UnityWebRequest req = UnityWebRequest.Get(url))
+        {
+            req.downloadHandler = new DownloadHandlerBuffer();
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"JOIN ERROR: {req.error}");
+                yield break;
+            }
+
+            JoinResponse resp;
+            try { resp = JsonUtility.FromJson<JoinResponse>(req.downloadHandler.text); }
+            catch
+            {
+                Debug.LogError("JOIN ERROR: No pude parsear JoinResponse");
+                yield break;
+            }
+
+            if (resp == null || string.IsNullOrWhiteSpace(resp.codigo) || string.IsNullOrWhiteSpace(resp.sessionId))
+            {
+                Debug.LogError("JOIN ERROR: respuesta inválida");
+                yield break;
+            }
+
+            codigoSala = resp.codigo;
+            miSessionId = resp.sessionId;
+
+            Debug.Log($"ME UNI ✅  codigo={codigoSala}  sessionId={miSessionId}  jugadores={resp.cantidad}");
+            IniciarLoops();
+        }
     }
 
     public void IniciarLoops()
@@ -110,14 +192,8 @@ public class Servidor2 : MonoBehaviour
                 yield break;
 
             RespuestaEstado estado;
-            try
-            {
-                estado = JsonUtility.FromJson<RespuestaEstado>(json);
-            }
-            catch
-            {
-                yield break;
-            }
+            try { estado = JsonUtility.FromJson<RespuestaEstado>(json); }
+            catch { yield break; }
 
             if (estado == null || estado.posiciones == null)
                 yield break;

@@ -1,0 +1,139 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
+using UnityEngine.Networking;
+
+public class Servidor : MonoBehaviour
+{
+    [Header("Servidor")]
+    [SerializeField] private string baseUrl = "https://proyecto-y1ud.onrender.com";
+    [SerializeField] private float intervalo = 0.1f;
+
+    [Header("Sala")]
+    [SerializeField] private string codigoSala = "";
+    [SerializeField] private string miSessionId = "";
+
+    [Header("Portadrones")]
+    [SerializeField] private Transform miPorta;
+    [SerializeField] private Transform portaRemoto;
+
+    private WaitForSeconds waitIntervalo;
+
+    [System.Serializable]
+    private class JoinResponse
+    {
+        public string codigo;
+        public string sessionId;
+        public int cantidad;
+    }
+
+    [System.Serializable]
+    private class Position
+    {
+        public string sessionId;
+        public int slot;
+        public string tipo;
+        public int objId;
+        public float x;
+        public float y;
+        public float z;
+        public float rx;
+        public float ry;
+        public float rz;
+        public float rw;
+    }
+
+    [System.Serializable]
+    private class RespuestaEstado
+    {
+        public Position[] posiciones;
+    }
+
+    void Awake()
+    {
+        waitIntervalo = new WaitForSeconds(intervalo);
+    }
+
+    public void SetBaseUrl(string url)
+    {
+        baseUrl = url;
+    }
+
+    public void SetCodigoSala(string codigo)
+    {
+        codigoSala = codigo;
+    }
+
+    public void SetSessionId(string sessionId)
+    {
+        miSessionId = sessionId;
+    }
+
+    public void SetPortas(Transform mi, Transform remoto)
+    {
+        miPorta = mi;
+        portaRemoto = remoto;
+    }
+
+    public void IniciarLoops()
+    {
+        StopAllCoroutines();
+        StartCoroutine(SyncLoop());
+    }
+
+    IEnumerator SyncLoop()
+    {
+        while (true)
+        {
+            yield return GetStateAndAplicarPortaRemoto();
+            yield return waitIntervalo;
+        }
+    }
+
+    IEnumerator GetStateAndAplicarPortaRemoto()
+    {
+        if (string.IsNullOrWhiteSpace(codigoSala))
+            yield break;
+
+        string url = $"{baseUrl}/game/state/{codigoSala}";
+        using (UnityWebRequest req = UnityWebRequest.Get(url))
+        {
+            req.downloadHandler = new DownloadHandlerBuffer();
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                yield break;
+
+            string json = req.downloadHandler.text;
+            if (string.IsNullOrWhiteSpace(json) || json.StartsWith("\""))
+                yield break;
+
+            RespuestaEstado estado;
+            try
+            {
+                estado = JsonUtility.FromJson<RespuestaEstado>(json);
+            }
+            catch
+            {
+                yield break;
+            }
+
+            if (estado == null || estado.posiciones == null)
+                yield break;
+
+            for (int i = 0; i < estado.posiciones.Length; i++)
+            {
+                Position p = estado.posiciones[i];
+                if (p == null) continue;
+                if (p.tipo != "PORTA") continue;
+                if (!string.IsNullOrWhiteSpace(miSessionId) && p.sessionId == miSessionId) continue;
+                if (portaRemoto == null) continue;
+
+                portaRemoto.position = new Vector3(p.x, p.y, p.z);
+                portaRemoto.rotation = Quaternion.Euler(p.rx, p.ry, p.rz);
+                break;
+            }
+        }
+    }
+}

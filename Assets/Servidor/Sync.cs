@@ -73,7 +73,7 @@ public partial class Servidor
     byte[] body = Encoding.UTF8.GetBytes(json);
 
     // Endpoint (AJUSTÁ SOLO ESTO si tu ruta es distinta)
-    string url = baseUrl.TrimEnd('/') + "/placePorta/" + codigoSala;
+    string url = baseUrl.TrimEnd('/') + "/game/placePorta/" + codigoSala;
 
     using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
     {

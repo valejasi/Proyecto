@@ -10,7 +10,6 @@ public partial class Servidor
         Debug.Log("🔥 SendLoop INICIADO");
         while (true)
         {
-            Debug.Log("🟡 SendLoop tick");
             yield return SendMoveBatchDrones();
             yield return waitIntervalo;
         }

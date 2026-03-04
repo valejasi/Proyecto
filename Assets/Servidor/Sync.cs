@@ -103,72 +103,65 @@ public partial class Servidor
     }
 
     IEnumerator SendMoveBatchDrones()
-{
-    if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
-
-    if (!portaEnviada) yield break;
-
-    Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
-    if (misDrones == null || misDrones.Length == 0) yield break;
-
-    if (ultimaPos == null || ultimaPos.Length != misDrones.Length)
-        ultimaPos = new Vector3[misDrones.Length];
-
-    if (ultimaRot == null || ultimaRot.Length != misDrones.Length)
-        ultimaRot = new Quaternion[misDrones.Length];
-
-    PositionData[] items = new PositionData[misDrones.Length];
-    int count = 0;
-
-    for (int i = 0; i < misDrones.Length; i++)
     {
-        Transform t = misDrones[i];
-        if (t == null) continue;
+        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+        if (!portaEnviada) yield break;
+        if (misObjetos.Count == 0) yield break;
 
-        if (!idPorTransformLocal.TryGetValue(t, out int objId))
-            continue;
+        List<PositionData> items = new List<PositionData>();
 
-        if (!DronMove(i, t)) continue;
+        foreach (var kv in misObjetos)
+        {
+            int objId = kv.Key;
+            Transform t = kv.Value;
 
-        ultimaPos[i] = t.position;
-        ultimaRot[i] = t.rotation;
+            if (t == null) continue;
 
-        items[count] = new PositionData(miSessionId, miSlot, objId, t.position, t.rotation);
-        count++;
+            // skip portadrone, it has its own send (placePorta)
+            if (objId == miPortaId) continue;
+
+            // use objId as index key for ultimaPos/ultimaRot
+            int idx = objId - ((miSlot == 1) ? 8 : 2);
+            if (idx < 0) continue;
+
+            if (!DronMove(idx, t)) continue;
+
+            // grow arrays if needed
+            if (ultimaPos == null || idx >= ultimaPos.Length)
+            {
+                int newSize = idx + 1;
+                Vector3[] newPos = new Vector3[newSize];
+                Quaternion[] newRot = new Quaternion[newSize];
+                if (ultimaPos != null)
+                    for (int i = 0; i < ultimaPos.Length; i++) { newPos[i] = ultimaPos[i]; newRot[i] = ultimaRot[i]; }
+                ultimaPos = newPos;
+                ultimaRot = newRot;
+            }
+
+            ultimaPos[idx] = t.position;
+            ultimaRot[idx] = t.rotation;
+
+            items.Add(new PositionData(miSessionId, miSlot, objId, t.position, t.rotation));
+        }
+
+        if (items.Count == 0) yield break;
+
+        MoveBatchRequest payload = new MoveBatchRequest { items = items.ToArray() };
+        string json = JsonUtility.ToJson(payload);
+        string url = baseUrl + "/game/moveBatch/" + codigoSala;
+
+        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
+            req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                Debug.LogWarning("SendMoveBatch ERROR: " + req.error);
+        }
     }
-
-    if (count == 0) yield break;
-
-    if (count != items.Length)
-    {
-        PositionData[] trimmed = new PositionData[count];
-        for (int i = 0; i < count; i++) trimmed[i] = items[i];
-        items = trimmed;
-    }
-
-    MoveBatchRequest payload = new MoveBatchRequest { items = items };
-    string json = JsonUtility.ToJson(payload);
-
-    Debug.Log("ENVIANDO MOVE BATCH -> Sala: " + codigoSala +
-              " | Session: " + miSessionId +
-              " | Cantidad objetos: " + items.Length +
-              " | JSON: " + json);
-
-    string url = baseUrl + "/game/moveBatch/" + codigoSala;
-
-    using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
-    {
-        byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
-        req.uploadHandler = new UploadHandlerRaw(bodyRaw);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.SetRequestHeader("Content-Type", "application/json");
-
-        yield return req.SendWebRequest();
-
-        if (req.result != UnityWebRequest.Result.Success)
-            Debug.LogWarning("SendMoveBatch ERROR: " + req.error + " | " + req.downloadHandler.text);
-    }
-}
 
     IEnumerator GetStateAndApplyRemotos()
     {
@@ -290,7 +283,9 @@ public partial class Servidor
 
         // Register in my objects map
         misObjetos[objId] = dronObj.transform;
-        idPorTransformLocal[dronObj.transform] = objId; 
+        idPorTransformLocal[dronObj.transform] = objId;
+
+        Debug.Log($"Dron registrado: objId={objId} index={index}");
 
         // Expand ultimaPos/ultimaRot arrays if needed
         if (ultimaPos == null || index >= ultimaPos.Length)

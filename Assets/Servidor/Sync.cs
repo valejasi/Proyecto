@@ -35,7 +35,11 @@ public partial class Servidor
             yield break;
         }
 
-        if (!misObjetos.TryGetValue(0, out Transform miPorta) || miPorta == null)
+        //el primero en conectarse es aereo, id del portadron 0
+        //el segundo es naval, id del dron = 1
+        int portaId = (miSlot == 1) ? 0 : 1;
+
+        if (!misObjetos.TryGetValue(portaId, out Transform miPorta) || miPorta == null)
         {
             Debug.LogError("No tengo mi PORTA asignado en misObjetos.");
             yield break;
@@ -43,9 +47,7 @@ public partial class Servidor
 
         string url = baseUrl + "/game/placePorta/" + codigoSala;
 
-        //el primero en conectarse es aereo, id del portadron 0
-        //el segundo es naval, id del dron = 1
-        int portaId = (miSlot == 1) ? 0 : 1;
+        
 
         PositionData data = new PositionData(
             miSessionId,
@@ -80,8 +82,6 @@ public partial class Servidor
             var rb = miPorta.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
                 rb.isKinematic = true;
             }
 
@@ -129,7 +129,8 @@ public partial class Servidor
             ultimaPos[i] = t.position;
             ultimaRot[i] = t.rotation;
 
-            int objId = baseId + 1;
+            int objId = baseId + i;
+            Debug.Log("cree dron num " + objId);
             items[count] = new PositionData(miSessionId, miSlot, objId, t.position, t.rotation);
             count++;
         }
@@ -146,12 +147,6 @@ public partial class Servidor
 
         MoveBatchRequest payload = new MoveBatchRequest { items = items };
         string json = JsonUtility.ToJson(payload);
-
-        // DEBUG: Confirmo que estoy enviando movimiento al servidor
-        Debug.Log("ENVIANDO MOVE BATCH -> Sala: " + codigoSala + 
-                " | Session: " + miSessionId + 
-                " | Cantidad objetos: " + items.Length + 
-                " | JSON: " + json);
 
         string url = baseUrl + "/game/moveBatch/" + codigoSala;
 
@@ -206,12 +201,6 @@ public partial class Servidor
 
                 Vector3 pos = new Vector3(p.x, p.y, p.z);
                 Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);
-
-                // DEBUG: Confirmo que recibí movimiento remoto
-                Debug.Log("RECIBIDO REMOTO -> ObjId: " + p.objId + 
-                        " | Slot: " + p.slot + 
-                        " | Pos: " + pos);
-
 
                 remoteTargetPos[p.objId] = pos;
                 remoteTargetRot[p.objId] = rot;

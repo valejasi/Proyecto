@@ -47,9 +47,6 @@ public partial class Servidor
             }
         }
         Debug.Log($"Slot asignado: {miSlot}. Mis objetos: {misObjetos.Count}. Remotos: {objetosRemotos.Count}");
-
-        //TESTEO DE CONEXION inicio el multiplayer automatico
-        IniciarSyncAutomatico();
     }
 
     void RebuildObjectMapsForSlotPreview()
@@ -70,22 +67,24 @@ public partial class Servidor
         remoteTargetPos.Clear();
         remoteTargetRot.Clear();
 
-        Transform miPorta = (miSlot == 1) ? porta1 : porta2;
+        int miPortaObjId    = (miSlot == 1) ? 0 : 1;
+        int otroPortaObjId  = (miSlot == 1) ? 1 : 0;
+
+        Transform miPorta   = (miSlot == 1) ? porta1 : porta2;
         Transform otroPorta = (miSlot == 1) ? porta2 : porta1;
 
-        misObjetos[0] = miPorta;
-        objetosRemotos[0] = otroPorta;
+        misObjetos[miPortaObjId]   = miPorta;
+        objetosRemotos[otroPortaObjId] = otroPorta;
 
-        Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
-        Transform[] dronesOtro = (miSlot == 1) ? dronesP2 : dronesP1;
+        Transform[] misDrones   = (miSlot == 1) ? dronesP1 : dronesP2;
+        Transform[] dronesOtro  = (miSlot == 1) ? dronesP2 : dronesP1;
 
         if (misDrones != null)
         {
             for (int i = 0; i < misDrones.Length; i++)
             {
                 if (misDrones[i] == null) continue;
-                int objId = i + 1;
-                misObjetos[objId] = misDrones[i];
+                misObjetos[i + 1] = misDrones[i];
             }
         }
 
@@ -94,11 +93,10 @@ public partial class Servidor
             for (int i = 0; i < dronesOtro.Length; i++)
             {
                 if (dronesOtro[i] == null) continue;
-                int objId = i + 1;
-                objetosRemotos[objId] = dronesOtro[i];
+                objetosRemotos[i + 1] = dronesOtro[i];
             }
         }
-
+            
         foreach (var kv in objetosRemotos)
         {
             if (kv.Value == null) continue;

@@ -122,6 +122,7 @@ public partial class Servidor : MonoBehaviour
         // Aplicar smoothing a objetos remotos
         foreach (var kv in objetosRemotos)
         {
+            Debug.Log("objetosRemotos -> objId: " + kv.Key + " | obj: " + kv.Value.name);
             int objId = kv.Key;
             Transform t = kv.Value;
             if (t == null) continue;

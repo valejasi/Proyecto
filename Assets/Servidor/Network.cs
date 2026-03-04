@@ -35,6 +35,7 @@ public partial class Servidor
 
             for (int i = 0; i < misDrones.Length; i++)
             {
+                if (resp.dronesIds[i] == -1) 
                 idPorTransformLocal[misDrones[i]] = resp.dronesIds[i];
             }
             
@@ -79,6 +80,7 @@ public partial class Servidor
 
             for (int i = 0; i < misDrones.Length; i++)
             {
+                if (resp.dronesIds[i] == -1) 
                 idPorTransformLocal[misDrones[i]] = resp.dronesIds[i];
             }
 

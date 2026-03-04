@@ -68,8 +68,6 @@ public class Mover : MonoBehaviour
     {
         if (!isMine) return;
 
-        if (estaSeleccionado)
-
         if (!estaSeleccionado)
         {
             if (!rb.isKinematic) rb.linearVelocity = Vector3.zero;

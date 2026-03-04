@@ -1984,6 +1984,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8489156058771384897, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
+      propertyPath: servidor
+      value: 
+      objectReference: {fileID: 1238109337}
+    - target: {fileID: 8489156058771384897, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
+      propertyPath: vidaMaxima
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8489156058771384897, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
       propertyPath: dronesMaximos
       value: 6
       objectReference: {fileID: 0}
@@ -2006,6 +2014,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 499873481987742630, guid: bb0be04510dd00e4db5f580b06b1fc01, type: 3}
+      propertyPath: servidor
+      value: 
+      objectReference: {fileID: 1238109337}
     - target: {fileID: 816081131285510381, guid: bb0be04510dd00e4db5f580b06b1fc01, type: 3}
       propertyPath: m_Enabled
       value: 1

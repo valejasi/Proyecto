@@ -277,4 +277,33 @@ public partial class Servidor
                 Debug.LogWarning("Recargar ERROR: " + req.error + " | " + req.downloadHandler.text);
         }
     }
+
+    //funcion que registra un nuevo dron
+    public void RegistrarDronDesplegado(GameObject dronObj, int index)
+    {
+        int baseId = (miSlot == 1) ? 8 : 2;
+        int objId  = baseId + index;
+
+        // Register in my objects map
+        misObjetos[objId] = dronObj.transform;
+
+        // Expand ultimaPos/ultimaRot arrays if needed
+        if (ultimaPos == null || index >= ultimaPos.Length)
+        {
+            int newSize = index + 1;
+            Vector3[]    newPos = new Vector3[newSize];
+            Quaternion[] newRot = new Quaternion[newSize];
+
+            if (ultimaPos != null)
+                for (int i = 0; i < ultimaPos.Length; i++) { newPos[i] = ultimaPos[i]; newRot[i] = ultimaRot[i]; }
+
+            ultimaPos = newPos;
+            ultimaRot = newRot;
+        }
+
+        ultimaPos[index] = dronObj.transform.position;
+        ultimaRot[index] = dronObj.transform.rotation;
+
+        Debug.Log($"Dron registrado: objId={objId} index={index}");
+    }
 }

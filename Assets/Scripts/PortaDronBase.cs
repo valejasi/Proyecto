@@ -12,6 +12,8 @@ public abstract class PortaDronBase : MonoBehaviour
     protected int vidaActual;
     protected int dronesDesplegados;
 
+    public Servidor servidor;
+
     protected virtual void Start()
     {
             Debug.Log("PortaDronBase Start ejecutado");
@@ -36,8 +38,14 @@ public abstract class PortaDronBase : MonoBehaviour
 
         Debug.Log("Desplegando dron");
 
-        Instantiate(prefabDron, transform.position + transform.forward * 2f, Quaternion.identity);
+        //creo un dron
+        GameObject nuevoDron = Instantiate(prefabDron, transform.position + transform.forward * 2f, Quaternion.identity);
         dronesDesplegados++;
+
+        //le aviso al servidor que lo asigne
+        Servidor srv = FindAnyObjectByType<Servidor>();
+        if (srv != null)
+            srv.RegistrarDronDesplegado(nuevoDron, dronesDesplegados - 1);
     }
 
     protected abstract bool EstaEnZonaValida();

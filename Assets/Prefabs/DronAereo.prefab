@@ -137,7 +137,7 @@ MonoBehaviour:
   vidaMaxima: 1
   "da\xF1o": 1
   porcentajeVision: 0
-  porcentajeVelocidad: 0
+  porcentajeVelocidad: 0.8
   bombas: 1
 --- !u!114 &85758376389500805
 MonoBehaviour:

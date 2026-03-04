@@ -6,7 +6,6 @@ public abstract class PortaDronBase : MonoBehaviour
     public int dronesMaximos;
     public bool estaSeleccionado = false;
 
-
     public GameObject prefabDron;
 
     protected int vidaActual;
@@ -16,7 +15,7 @@ public abstract class PortaDronBase : MonoBehaviour
 
     protected virtual void Start()
     {
-            Debug.Log("PortaDronBase Start ejecutado");
+        Debug.Log("PortaDronBase Start ejecutado");
         vidaActual = vidaMaxima;
     }
 
@@ -38,23 +37,28 @@ public abstract class PortaDronBase : MonoBehaviour
 
         Debug.Log("Desplegando dron");
 
-        //creo un dron
         GameObject nuevoDron = Instantiate(prefabDron, transform.position + transform.forward * 2f, Quaternion.identity);
+
+        // ← marcar el dron como mío al desplegarlo
+        Mover m = nuevoDron.GetComponent<Mover>();
+        if (m != null)
+            m.isMine = true;
+
         dronesDesplegados++;
 
-        //le aviso al servidor que lo asigne
         Servidor srv = FindAnyObjectByType<Servidor>();
         if (srv != null)
             srv.RegistrarDronDesplegado(nuevoDron, dronesDesplegados - 1);
     }
 
     protected abstract bool EstaEnZonaValida();
-  
+
     void Update()
     {
-            DetectarInput();
+        DetectarInput();
     }
-   protected void DetectarInput()
+
+    protected void DetectarInput()
     {
         if (!estaSeleccionado)
             return;
@@ -63,10 +67,10 @@ public abstract class PortaDronBase : MonoBehaviour
         {
             DesplegarDron();
         }
-    } 
-    
+    }
+
     protected abstract void Morir();
 
     [Header("Limites del Mapa")]
-     public float anchoMapa = 60f;
+    public float anchoMapa = 60f;
 }

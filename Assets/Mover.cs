@@ -48,8 +48,7 @@ public class Mover : MonoBehaviour
         rb.interpolation = RigidbodyInterpolation.Interpolate;
     }
 
-    void Update()
-    {
+    void Update(){         
         if (!isMine || !estaSeleccionado) return;
 
         // ===== ROTACIÓN CON MOUSE =====
@@ -69,15 +68,16 @@ public class Mover : MonoBehaviour
     {
         if (!isMine) return;
 
+        if (estaSeleccionado)
+
         if (!estaSeleccionado)
         {
-            rb.linearVelocity  = Vector3.zero;
+            if (!rb.isKinematic) rb.linearVelocity = Vector3.zero;
             return;
         }
-
         if (combustible != null && !combustible.TieneCombustible())
         {
-            rb.linearVelocity  = Vector3.zero;
+            if (!rb.isKinematic) rb.linearVelocity = Vector3.zero;
             return;
         }
 
@@ -90,10 +90,9 @@ public class Mover : MonoBehaviour
         Vector3 velocidadDeseada = direccion * velocidadMovimiento;
 
         // Suavizado (aceleración progresiva)
-        rb.linearVelocity  = Vector3.Lerp(
-            rb.linearVelocity ,
-            velocidadDeseada,
-            Time.fixedDeltaTime * suavizadoMovimiento
-        );
+        if (!rb.isKinematic)  
+        {
+            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity,velocidadDeseada,Time.fixedDeltaTime * suavizadoMovimiento);
+        }
     }
 }

@@ -10,7 +10,7 @@ public abstract class DronBase : MonoBehaviour
 
     [Header("Movimiento y Vision")]
     public float porcentajeVision;
-    public float porcentajeVelocidad;
+    public float porcentajeVelocidad = 1;
 
     public virtual bool EsAereo => false; 
 

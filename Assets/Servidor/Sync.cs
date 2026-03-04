@@ -132,6 +132,7 @@ public partial class Servidor
             ultimaRot[i] = t.rotation;
 
             int objId = baseId + i;
+
             items[count] = new PositionData(miSessionId, miSlot, objId, t.position, t.rotation);
             count++;
         }

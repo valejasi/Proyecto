@@ -10,6 +10,7 @@ public partial class Servidor
         public string sessionId;
         public int jugadores;
         public int portaId;
+        public int[] dronesIds;
     }
 
     [System.Serializable]

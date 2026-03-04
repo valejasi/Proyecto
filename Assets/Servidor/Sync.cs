@@ -2,9 +2,11 @@ using System.Collections;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
+using System.Collections.Generic;
 //sincronizacion cliente-servidor
 public partial class Servidor
 {
+    private Dictionary<Transform, int> idPorTransformLocal = new Dictionary<Transform, int>();
     IEnumerator SendLoop()
     {
         Debug.Log("🔥 SendLoop INICIADO");
@@ -100,77 +102,72 @@ public partial class Servidor
     }
 
     IEnumerator SendMoveBatchDrones()
-    {
-        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+{
+    if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
 
-        // no empieza la partida real hasta colocar porta
-        if (!portaEnviada) yield break;
+    if (!portaEnviada) yield break;
 
-        Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
-        if (misDrones == null || misDrones.Length == 0) yield break;
+    Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
+    if (misDrones == null || misDrones.Length == 0) yield break;
 
-        PositionData[] items = new PositionData[misDrones.Length];
-        int count = 0;
-
-        //los portadrones tienen el objId 0 y 1
-        //drones navales objId = [2...7]
-        //drones aereos  objId = [8... 19]
-        int baseId = (miSlot == 1) ? 8 : 2;
-
+    if (ultimaPos == null || ultimaPos.Length != misDrones.Length)
         ultimaPos = new Vector3[misDrones.Length];
+
+    if (ultimaRot == null || ultimaRot.Length != misDrones.Length)
         ultimaRot = new Quaternion[misDrones.Length];
 
-        for (int i = 0; i < misDrones.Length; i++)
-        {
-            Transform t = misDrones[i];
-            if (t == null) continue;
+    PositionData[] items = new PositionData[misDrones.Length];
+    int count = 0;
 
-            //Mandar posición solo si el dron se movió un mínimo de distancia, sino se está mandando todo el tiempo la posición de todos los drones, incluso si están quietos.
-            if (!DronMove(i, t)) continue;
+    for (int i = 0; i < misDrones.Length; i++)
+    {
+        Transform t = misDrones[i];
+        if (t == null) continue;
 
-            ultimaPos[i] = t.position;
-            ultimaRot[i] = t.rotation;
+        if (!idPorTransformLocal.TryGetValue(t, out int objId))
+            continue;
 
-            int objId = baseId + i;
+        if (!DronMove(i, t)) continue;
 
-            items[count] = new PositionData(miSessionId, miSlot, objId, t.position, t.rotation);
-            count++;
-        }
+        ultimaPos[i] = t.position;
+        ultimaRot[i] = t.rotation;
 
-        if (count == 0) yield break;
-
-        if (count != items.Length)
-        {
-            PositionData[] trimmed = new PositionData[count];
-            for (int i = 0; i < count; i++) trimmed[i] = items[i];
-            items = trimmed;
-        }
-
-
-        MoveBatchRequest payload = new MoveBatchRequest { items = items };
-        string json = JsonUtility.ToJson(payload);
-
-        // DEBUG: Confirmo que estoy enviando movimiento al servidor
-        Debug.Log("ENVIANDO MOVE BATCH -> Sala: " + codigoSala + 
-                " | Session: " + miSessionId + 
-                " | Cantidad objetos: " + items.Length + 
-                " | JSON: " + json);
-
-        string url = baseUrl + "/game/moveBatch/" + codigoSala;
-
-        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
-        {
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
-            req.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            req.downloadHandler = new DownloadHandlerBuffer();
-            req.SetRequestHeader("Content-Type", "application/json");
-
-            yield return req.SendWebRequest();
-
-            if (req.result != UnityWebRequest.Result.Success)
-                Debug.LogWarning("SendMoveBatch ERROR: " + req.error + " | " + req.downloadHandler.text);
-        }
+        items[count] = new PositionData(miSessionId, miSlot, objId, t.position, t.rotation);
+        count++;
     }
+
+    if (count == 0) yield break;
+
+    if (count != items.Length)
+    {
+        PositionData[] trimmed = new PositionData[count];
+        for (int i = 0; i < count; i++) trimmed[i] = items[i];
+        items = trimmed;
+    }
+
+    MoveBatchRequest payload = new MoveBatchRequest { items = items };
+    string json = JsonUtility.ToJson(payload);
+
+    Debug.Log("ENVIANDO MOVE BATCH -> Sala: " + codigoSala +
+              " | Session: " + miSessionId +
+              " | Cantidad objetos: " + items.Length +
+              " | JSON: " + json);
+
+    string url = baseUrl + "/game/moveBatch/" + codigoSala;
+
+    using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+    {
+        byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
+        req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        req.SetRequestHeader("Content-Type", "application/json");
+
+        yield return req.SendWebRequest();
+
+        if (req.result != UnityWebRequest.Result.Success)
+            Debug.LogWarning("SendMoveBatch ERROR: " + req.error + " | " + req.downloadHandler.text);
+    }
+}
 
     IEnumerator GetStateAndApplyRemotos()
     {

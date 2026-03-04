@@ -26,6 +26,11 @@ public class Mover : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         combustible = GetComponent<Combustible>();
 
+        // Aplica porcentaje de velocidad según el tipo de dron
+        DronBase dron = GetComponent<DronBase>();
+        if (dron != null)
+            velocidadMovimiento *= dron.porcentajeVelocidad;
+
         if (rb == null)
         {
             Debug.LogError($"[{name}] No tiene Rigidbody.");

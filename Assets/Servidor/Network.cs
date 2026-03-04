@@ -28,14 +28,16 @@ public partial class Servidor
             miSessionId = resp.sessionId;
             miPortaId = resp.portaId;
 
+            // HOST = SLOT 1
+            SetSlot(1);
+
             Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
 
             for (int i = 0; i < misDrones.Length; i++)
             {
                 idPorTransformLocal[misDrones[i]] = resp.dronesIds[i];
             }
-            // HOST = SLOT 1
-            SetSlot(1);
+            
             IniciarSyncAutomatico();
 
             Debug.Log($"CREADO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
@@ -70,6 +72,9 @@ public partial class Servidor
             miSessionId = resp.sessionId;
             miPortaId = resp.portaId;
 
+            // CLIENTE = SLOT 2
+            SetSlot(2);
+
             Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
 
             for (int i = 0; i < misDrones.Length; i++)
@@ -77,8 +82,7 @@ public partial class Servidor
                 idPorTransformLocal[misDrones[i]] = resp.dronesIds[i];
             }
 
-            // CLIENTE = SLOT 2
-            SetSlot(2);
+            
             IniciarSyncAutomatico();
 
             Debug.Log($"UNIDO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");

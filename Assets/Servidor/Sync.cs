@@ -94,6 +94,7 @@ public partial class Servidor
 
     bool DronMove(int i, Transform t)
     {
+        if (ultimaPos == null || i >= ultimaPos.Length) return true;
         if ((t.position - ultimaPos[i]).sqrMagnitude > minPos * minPos)
             return true;
         if (Quaternion.Angle(t.rotation, ultimaRot[i]) > minRot)
@@ -201,8 +202,11 @@ public partial class Servidor
                 if (p.slot != slotRemoto)
                     continue;
 
-                if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null)
+                if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null){
+                    // si recibe id de un dron pero el dron no existe, lo crea
+                    CrearObjetoRemoto(p);
                     continue;
+                }
 
                 Vector3 pos = new Vector3(p.x, p.y, p.z);
                 Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);
@@ -286,6 +290,7 @@ public partial class Servidor
 
         // Register in my objects map
         misObjetos[objId] = dronObj.transform;
+        idPorTransformLocal[dronObj.transform] = objId; 
 
         // Expand ultimaPos/ultimaRot arrays if needed
         if (ultimaPos == null || index >= ultimaPos.Length)

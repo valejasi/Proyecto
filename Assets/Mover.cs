@@ -95,4 +95,6 @@ public class Mover : MonoBehaviour
             rb.linearVelocity = Vector3.Lerp(rb.linearVelocity,velocidadDeseada,Time.fixedDeltaTime * suavizadoMovimiento);
         }
     }
+    
+    
 }

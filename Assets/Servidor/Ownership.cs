@@ -67,24 +67,27 @@ public partial class Servidor
         remoteTargetPos.Clear();
         remoteTargetRot.Clear();
 
-        int miPortaObjId    = (miSlot == 1) ? 0 : 1;
-        int otroPortaObjId  = (miSlot == 1) ? 1 : 0;
+        int miPortaObjId   = (miSlot == 1) ? 0 : 1;
+        int otroPortaObjId = (miSlot == 1) ? 1 : 0;
 
         Transform miPorta   = (miSlot == 1) ? porta1 : porta2;
         Transform otroPorta = (miSlot == 1) ? porta2 : porta1;
 
-        misObjetos[miPortaObjId]   = miPorta;
+        misObjetos[miPortaObjId]       = miPorta;
         objetosRemotos[otroPortaObjId] = otroPorta;
 
-        Transform[] misDrones   = (miSlot == 1) ? dronesP1 : dronesP2;
-        Transform[] dronesOtro  = (miSlot == 1) ? dronesP2 : dronesP1;
+        Transform[] misDrones  = (miSlot == 1) ? dronesP1 : dronesP2;
+        Transform[] dronesOtro = (miSlot == 1) ? dronesP2 : dronesP1;
+
+        int baseMio  = (miSlot == 1) ? 8 : 2;   // aéreo=8..19, naval=2..7
+        int baseOtro = (miSlot == 1) ? 2 : 8;
 
         if (misDrones != null)
         {
             for (int i = 0; i < misDrones.Length; i++)
             {
                 if (misDrones[i] == null) continue;
-                misObjetos[i + 1] = misDrones[i];
+                misObjetos[baseMio + i] = misDrones[i];
             }
         }
 
@@ -93,10 +96,10 @@ public partial class Servidor
             for (int i = 0; i < dronesOtro.Length; i++)
             {
                 if (dronesOtro[i] == null) continue;
-                objetosRemotos[i + 1] = dronesOtro[i];
+                objetosRemotos[baseOtro + i] = dronesOtro[i];
             }
         }
-            
+
         foreach (var kv in objetosRemotos)
         {
             if (kv.Value == null) continue;

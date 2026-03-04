@@ -25,6 +25,7 @@ public partial class Servidor
             JoinResponse resp = JsonUtility.FromJson<JoinResponse>(json);
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
+            miPortaId = resp.portaId;
 
             // HOST = SLOT 1
             SetSlot(1);

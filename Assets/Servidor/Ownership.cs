@@ -1,3 +1,4 @@
+
 using UnityEngine;
 //define que pertenece al jugador local y remoto
 //configuraciones fisicas y de control
@@ -5,36 +6,52 @@ public partial class Servidor
 {
     void IniciarSyncAutomatico()
     {
-        if (sendLoop == null) sendLoop = StartCoroutine(SendLoop());
-        if (receiveLoop == null) receiveLoop = StartCoroutine(ReceiveLoop());
-        Debug.Log("Sync automático iniciado");
+        
+        if (sendLoop == null)
+        {
+            //PARA EL DEBUG
+            Debug.Log("SendLoop arrancó");
+            sendLoop = StartCoroutine(SendLoop());
+        }
+        
+        if (receiveLoop == null)
+        {
+            //PARA EL DEBUG
+            Debug.Log("Sync automático iniciado");
+            receiveLoop = StartCoroutine(ReceiveLoop());
+        } 
+        
     }
 
     [SerializeField] private CamaraJugador camaraJugador;  
 
     void SetSlot(int slot)
-{
-    miSlot = slot;
-    portaEnviada = false;
-    if (camaraJugador != null)
-        camaraJugador.esAereo = (miSlot == 1);
-    RebuildObjectMapsForSlot();
-    AplicarOwnershipMover();
-    Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
-    if (misDrones != null)
     {
-        ultimaPos = new Vector3[misDrones.Length];
-        ultimaRot = new Quaternion[misDrones.Length];
-        for (int i = 0; i < misDrones.Length; i++)
+        Debug.Log("SetSlot llamado con slot: " + slot);
+        miSlot = slot;
+        portaEnviada = false;
+        if (camaraJugador != null)
+            camaraJugador.esAereo = (miSlot == 1);
+        RebuildObjectMapsForSlot();
+        AplicarOwnershipMover();
+        Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
+        if (misDrones != null)
         {
-            if (misDrones[i] == null) 
-                continue;
-            ultimaPos[i] = misDrones[i].position;
-            ultimaRot[i] = misDrones[i].rotation;
+            ultimaPos = new Vector3[misDrones.Length];
+            ultimaRot = new Quaternion[misDrones.Length];
+            for (int i = 0; i < misDrones.Length; i++)
+            {
+                if (misDrones[i] == null) 
+                    continue;
+                ultimaPos[i] = misDrones[i].position;
+                ultimaRot[i] = misDrones[i].rotation;
+            }
         }
+        Debug.Log($"Slot asignado: {miSlot}. Mis objetos: {misObjetos.Count}. Remotos: {objetosRemotos.Count}");
+
+        //TESTEO DE CONEXION inicio el multiplayer automatico
+        IniciarSyncAutomatico();
     }
-    Debug.Log($"Slot asignado: {miSlot}. Mis objetos: {misObjetos.Count}. Remotos: {objetosRemotos.Count}");
-}
 
     void RebuildObjectMapsForSlotPreview()
     {

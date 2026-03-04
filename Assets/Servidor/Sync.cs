@@ -23,6 +23,7 @@ public partial class Servidor
             yield return waitIntervalo;
         }
     }
+
     IEnumerator PlacePortaOnce()
     {
         // evita doble envío
@@ -44,7 +45,7 @@ public partial class Servidor
 
         //el primero en conectarse es aereo, id del portadron 0
         //el segundo es naval, id del dron = 1
-        int portaId = (miSlot == 1) ? 0 : 1;
+        int portaId = miPortaId;
 
         PositionData data = new PositionData(
             miSessionId,
@@ -103,30 +104,30 @@ public partial class Servidor
     IEnumerator SendMoveBatchDrones()
     {
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
-        if (!portaEnviada) yield break;
 
-        int portaId = (miSlot == 1) ? 0 : 1;
+        // no empieza la partida real hasta colocar porta
+        if (!portaEnviada) yield break;
 
         Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
         if (misDrones == null || misDrones.Length == 0) yield break;
 
-        // +1 para el porta
-        PositionData[] items = new PositionData[misDrones.Length + 1];
+        PositionData[] items = new PositionData[misDrones.Length];
         int count = 0;
 
-        if (misObjetos.TryGetValue(portaId, out Transform porta) && porta != null)
-        {
-            items[count] = new PositionData(miSessionId, miSlot, portaId, porta.position, porta.rotation);
-            count++;
-        }
-
+        //los portadrones tienen el objId 0 y 1
+        //drones navales objId = [2...7]
+        //drones aereos  objId = [8... 19]
         int baseId = (miSlot == 1) ? 8 : 2;
+
+        ultimaPos = new Vector3[misDrones.Length];
+        ultimaRot = new Quaternion[misDrones.Length];
 
         for (int i = 0; i < misDrones.Length; i++)
         {
             Transform t = misDrones[i];
             if (t == null) continue;
 
+            //Mandar posición solo si el dron se movió un mínimo de distancia, sino se está mandando todo el tiempo la posición de todos los drones, incluso si están quietos.
             if (!DronMove(i, t)) continue;
 
             ultimaPos[i] = t.position;
@@ -146,14 +147,17 @@ public partial class Servidor
             items = trimmed;
         }
 
+
         MoveBatchRequest payload = new MoveBatchRequest { items = items };
         string json = JsonUtility.ToJson(payload);
 
-        Debug.Log("ENVIANDO MOVE BATCH -> Sala: " + codigoSala +
-                " | Session: " + miSessionId +
-                " | Cantidad objetos: " + items.Length);
+        // DEBUG: Confirmo que estoy enviando movimiento al servidor
+        Debug.Log("ENVIANDO MOVE BATCH -> Sala: " + codigoSala + 
+                " | Session: " + miSessionId + 
+                " | Cantidad objetos: " + items.Length + 
+                " | JSON: " + json);
 
-        string url = baseUrl.TrimEnd('/') + "/game/moveBatch/" + codigoSala;
+        string url = baseUrl + "/game/moveBatch/" + codigoSala;
 
         using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
         {
@@ -281,26 +285,6 @@ public partial class Servidor
 
             if (req.result != UnityWebRequest.Result.Success)
                 Debug.LogWarning("Recargar ERROR: " + req.error + " | " + req.downloadHandler.text);
-        }
-    }
-
-    [SerializeField] private float remoteLerp = 15f;
-
-    void LateUpdate()
-    {
-        if (objetosRemotos == null) return;
-
-        foreach (var kv in objetosRemotos)
-        {
-            int id = kv.Key;
-            Transform t = kv.Value;
-            if (t == null) continue;
-
-            if (remoteTargetPos.TryGetValue(id, out Vector3 tp))
-                t.position = Vector3.Lerp(t.position, tp, Time.deltaTime * remoteLerp);
-
-            if (remoteTargetRot.TryGetValue(id, out Quaternion tr))
-                t.rotation = Quaternion.Slerp(t.rotation, tr, Time.deltaTime * remoteLerp);
         }
     }
 }

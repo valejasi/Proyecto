@@ -2,18 +2,26 @@ using UnityEngine;
 
 public class CamaraJugador : MonoBehaviour
 {
-    public Transform objetivo;   // Dron seleccionado
-    public Transform cam;        // Main Camera 
+    public Transform objetivo;
+    public Transform cam;
 
-    [Header("Tipo Jugador")]
-    public bool esAereo = false;   // <- activar si es jugador aéreo
+    [Header("Tipo de Dron")]
+    public bool esAereo = false;
 
-    [Header("Vista Arriba")]
-    public Vector3 offsetArriba = new Vector3(0f, 7f, 0f);
+    [Header("Vista Arriba - Naval")]
+    public Vector3 offsetArribaNaval = new Vector3(0f, 7f, 0f);
+
+    [Header("Vista Arriba - Aéreo")]
+    public Vector3 offsetArribaAereo = new Vector3(0f, 14f, 0f);
+
     public Vector3 rotArribaLocal = new Vector3(90f, 0f, 0f);
 
-    [Header("Vista Apuntar (perfil - lado derecho)")]
-    public Vector3 offsetApuntar = new Vector3(5f, 2f, 0f); 
+    [Header("Vista Apuntar - Naval")]
+    public Vector3 offsetApuntarNaval = new Vector3(5f, 2f, 0f);
+
+    [Header("Vista Apuntar - Aéreo")]
+    public Vector3 offsetApuntarAereo = new Vector3(7f, 4f, 0f);
+
     public Vector3 rotApuntarLocal = new Vector3(5f, -90f, 0f);
 
     [Header("Vista Mapa")]
@@ -24,7 +32,6 @@ public class CamaraJugador : MonoBehaviour
     public float suavidadRot = 12f;
 
     private bool vistaMapaActiva = true;
-    private bool vistaDron = false;
 
     void LateUpdate()
     {
@@ -32,49 +39,49 @@ public class CamaraJugador : MonoBehaviour
 
         bool apuntando = Input.GetMouseButton(1);
 
-        Vector3 posDeseada;
-        Quaternion rotDeseada;
+        Vector3 offsetArriba  = esAereo ? offsetArribaAereo  : offsetArribaNaval;
+        Vector3 offsetApuntar = esAereo ? offsetApuntarAereo : offsetApuntarNaval;
 
-        //  factor 50% más si es aéreo
-        float factor = esAereo ? 1.5f : 1f;
+        Vector3    posDeseada;
+        Quaternion rotDeseada;
 
         if (vistaMapaActiva)
         {
-            posDeseada = objetivo.position + offsetMapa * factor;
+            posDeseada = objetivo.position + offsetMapa;
             rotDeseada = Quaternion.Euler(rotMapaLocal);
         }
         else if (apuntando)
         {
             posDeseada = objetivo.position
-                + objetivo.right * (offsetApuntar.x * factor)
-                + objetivo.up * (offsetApuntar.y * factor)
-                + objetivo.forward * (offsetApuntar.z * factor);
+                + objetivo.right   * offsetApuntar.x
+                + objetivo.up      * offsetApuntar.y
+                + objetivo.forward * offsetApuntar.z;
 
             rotDeseada = objetivo.rotation * Quaternion.Euler(rotApuntarLocal);
         }
         else
         {
-            posDeseada = objetivo.position + offsetArriba * factor;
+            posDeseada = objetivo.position + offsetArriba;
             rotDeseada = Quaternion.Euler(rotArribaLocal);
         }
 
         transform.position = Vector3.Lerp(
-            transform.position,
-            posDeseada,
-            Time.deltaTime * suavidadPos
-        );
+            transform.position, posDeseada, Time.deltaTime * suavidadPos);
 
         cam.localRotation = Quaternion.Lerp(
-            cam.localRotation,
-            rotDeseada,
-            Time.deltaTime * suavidadRot
-        );
+            cam.localRotation, rotDeseada, Time.deltaTime * suavidadRot);
     }
 
-    public void ActivarVistaDron()
+    public void ActivarVistaDron(bool aereo)
     {
+        esAereo = aereo;
         vistaMapaActiva = false;
-        vistaDron = true;
-        Debug.Log("Cambie de camara");
+        Debug.Log($"Vista dron activada – {(aereo ? "aéreo" : "naval")}");
+    }
+
+    public void VolverAMapa()
+    {
+        vistaMapaActiva = true;
+        Debug.Log("Volviendo a vista mapa");
     }
 }

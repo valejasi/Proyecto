@@ -8,7 +8,6 @@ public class Seleccionador : MonoBehaviour
 
     void Update()
     {
-        //detecto click izquierdo
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -16,7 +15,6 @@ public class Seleccionador : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                //si algo ya esta seleccionado, lo deselecciona
                 if (objetoSeleccionado != null)
                 {
                     Renderer rPrev = objetoSeleccionado.GetComponent<Renderer>();
@@ -33,18 +31,15 @@ public class Seleccionador : MonoBehaviour
                 }
 
                 objetoSeleccionado = hit.collider.gameObject;
-                Debug.Log("Seleccioné un dron: " + objetoSeleccionado.name);
+                Debug.Log("Seleccioné: " + objetoSeleccionado.name);
 
-                //si es un dron, acomodo la camara
                 DronBase dron = hit.collider.GetComponentInParent<DronBase>();
                 if (dron != null && camaraJugador != null)
                 {
                     camaraJugador.objetivo = dron.transform;
-                    camaraJugador.ActivarVistaDron();
-                    Debug.Log("Es un dron, cambiando cámara");
+                    camaraJugador.ActivarVistaDron(dron.EsAereo); // ← pasa el tipo
                 }
 
-                //pone el objeto en amarillo, todo menos los drones
                 Renderer r = objetoSeleccionado.GetComponent<Renderer>();
                 if (r != null && dron == null)
                 {
@@ -62,12 +57,10 @@ public class Seleccionador : MonoBehaviour
             }
         }
 
-        // FIJAR CON V SOLO SI ES PORTADRON
         if (Input.GetKeyDown(KeyCode.V) && objetoSeleccionado != null)
         {
             PortaDronBase porta = objetoSeleccionado.GetComponent<PortaDronBase>();
-
-            if (porta != null) // 👈 solo entra si es Naval o Aéreo
+            if (porta != null)
             {
                 Mover mover = objetoSeleccionado.GetComponent<Mover>();
                 if (mover != null)
@@ -86,7 +79,11 @@ public class Seleccionador : MonoBehaviour
                 Debug.Log("PortaDron fijado con V");
             }
         }
-    }
 
-    
+        // Volver al mapa con M
+        if (Input.GetKeyDown(KeyCode.M) && camaraJugador != null)
+        {
+            camaraJugador.VolverAMapa();
+        }
+    }
 }

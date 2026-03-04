@@ -12,6 +12,8 @@ public abstract class DronBase : MonoBehaviour
     public float porcentajeVision;
     public float porcentajeVelocidad;
 
+    public virtual bool EsAereo => false; 
+
     protected virtual void Start()
     {
         vidaActual = vidaMaxima;
@@ -20,11 +22,8 @@ public abstract class DronBase : MonoBehaviour
     public virtual void RecibirImpacto(int dañoRecibido)
     {
         vidaActual -= dañoRecibido;
-
         if (vidaActual <= 0)
-        {
             Morir();
-        }
     }
 
     protected abstract void Morir();

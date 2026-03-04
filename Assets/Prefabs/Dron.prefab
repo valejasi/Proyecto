@@ -82,7 +82,6 @@ GameObject:
   - component: {fileID: 7894138281171808681}
   - component: {fileID: 7803111544653086725}
   - component: {fileID: 8081552136313918669}
-  - component: {fileID: -6538007167482839963}
   m_Layer: 0
   m_Name: Dron
   m_TagString: Player
@@ -224,8 +223,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f140f09ec440fb488a1ee2c7e9ec640, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Mover
-  velocidadHorizontal: 5
+  velocidadMovimiento: 10
   velocidadVertical: 5
+  sensibilidadMouse: 120
+  suavizadoMovimiento: 8
+  estaSeleccionado: 0
+  isMine: 1
 --- !u!114 &8807677454031812590
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -306,19 +309,6 @@ MonoBehaviour:
   demoraParaRecargar: 2
   recargaPorSegundo: 20
   barraCombustible: {fileID: 0}
---- !u!114 &-6538007167482839963
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7465316174844917880}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dd52f56859d8c844ab632f3c5661924c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Dron
-  id: 0
 --- !u!1 &7631168754143438714
 GameObject:
   m_ObjectHideFlags: 0

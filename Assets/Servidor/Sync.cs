@@ -124,6 +124,8 @@ public partial class Servidor
             int idx = objId - ((miSlot == 1) ? 8 : 2);
             if (idx < 0) continue;
 
+            Debug.Log($"SendBatch checking objId={objId} idx={idx} DronMove={DronMove(idx, t)}");
+
             if (!DronMove(idx, t)) continue;
 
             // grow arrays if needed
@@ -195,7 +197,12 @@ public partial class Servidor
                 if (p.slot != slotRemoto)
                     continue;
 
+                //PARA EL TESTEO
+                bool found = objetosRemotos.TryGetValue(p.objId, out Transform tCheck);
+                Debug.Log($"objId={p.objId} found={found} transform={tCheck?.name ?? "null"}");
+
                 if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null){
+                    Debug.Log($"No encontrado en objetosRemotos, llamando CrearObjetoRemoto objId={p.objId}");
                     // si recibe id de un dron pero el dron no existe, lo crea
                     CrearObjetoRemoto(p);
                     continue;

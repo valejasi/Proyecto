@@ -179,14 +179,21 @@ public partial class Servidor
     }
 
     //crear objeto remoto
-      void CrearObjetoRemoto(PositionData p)
+    void CrearObjetoRemoto(PositionData p)
     {
         GameObject prefab = null;
 
-        if (p.tipo == "DRON")
-            prefab = dronPrefab;
+        if (p.tipo == "AEREO")
+            prefab = dronAereoPrefab;
+        else if (p.tipo == "NAVAL")
+            prefab = dronNavalPrefab;
         else if (p.tipo == "PORTA")
-            prefab = portaDronPrefab;
+        {
+            prefab = (p.slot == 1) ? portaDronAereoPrefab : portaDronNavalPrefab;
+        }
+    
+
+        Debug.Log($"CrearObjetoRemoto -> tipo={p.tipo} objId={p.objId} prefab={prefab?.name ?? "NULL"}");
 
         if (prefab == null)
         {
@@ -198,6 +205,13 @@ public partial class Servidor
         Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);
 
         GameObject obj = Instantiate(prefab, pos, rot);
+
+        // make sure remote drone is not controllable
+        Mover m = obj.GetComponent<Mover>();
+        if (m != null) m.isMine = false;
+
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null) rb.isKinematic = true;
 
         objetosRemotos[p.objId] = obj.transform;
         remoteTargetPos[p.objId] = pos;

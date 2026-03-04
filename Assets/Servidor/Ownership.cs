@@ -41,8 +41,7 @@ public partial class Servidor
             ultimaRot = new Quaternion[misDrones.Length];
             for (int i = 0; i < misDrones.Length; i++)
             {
-                if (misDrones[i] == null) 
-                    continue;
+                if (misDrones[i] == null) continue;
                 ultimaPos[i] = misDrones[i].position;
                 ultimaRot[i] = misDrones[i].rotation;
             }
@@ -77,11 +76,8 @@ public partial class Servidor
         misObjetos[miPortaObjId]       = miPorta;
         objetosRemotos[otroPortaObjId] = otroPorta;
 
-        Transform[] misDrones  = (miSlot == 1) ? dronesP1 : dronesP2;
-        Transform[] dronesOtro = (miSlot == 1) ? dronesP2 : dronesP1;
-
-        int baseMio  = (miSlot == 1) ? 8 : 2;   // aéreo=8..19, naval=2..7
-        int baseOtro = (miSlot == 1) ? 2 : 8;
+        Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
+        int baseMio = (miSlot == 1) ? 8 : 2;
 
         if (misDrones != null)
         {
@@ -89,15 +85,6 @@ public partial class Servidor
             {
                 if (misDrones[i] == null) continue;
                 misObjetos[baseMio + i] = misDrones[i];
-            }
-        }
-
-        if (dronesOtro != null)
-        {
-            for (int i = 0; i < dronesOtro.Length; i++)
-            {
-                if (dronesOtro[i] == null) continue;
-                objetosRemotos[baseOtro + i] = dronesOtro[i];
             }
         }
 

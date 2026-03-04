@@ -1197,31 +1197,15 @@ MonoBehaviour:
   baseUrl: https://proyecto-y1ud.onrender.com
   porta1: {fileID: 1828280382}
   porta2: {fileID: 307677594}
-  dronesP1:
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  - {fileID: 8123937429248137792, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
-  dronesP2:
-  - {fileID: 2455176228241295603, guid: ae4571286b42ed54ba0c8d6a0c2453eb, type: 3}
-  - {fileID: 2455176228241295603, guid: ae4571286b42ed54ba0c8d6a0c2453eb, type: 3}
-  - {fileID: 2455176228241295603, guid: ae4571286b42ed54ba0c8d6a0c2453eb, type: 3}
-  - {fileID: 2455176228241295603, guid: ae4571286b42ed54ba0c8d6a0c2453eb, type: 3}
-  - {fileID: 2455176228241295603, guid: ae4571286b42ed54ba0c8d6a0c2453eb, type: 3}
-  - {fileID: 2455176228241295603, guid: ae4571286b42ed54ba0c8d6a0c2453eb, type: 3}
+  dronesP1: []
+  dronesP2: []
   intervalo: 0.1
   smoothPos: 12
   smoothRot: 12
-  dronPrefab: {fileID: 0}
-  portaDronPrefab: {fileID: 0}
+  dronAereoPrefab: {fileID: 2176188128740564376, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
+  dronNavalPrefab: {fileID: 6645096671164301066, guid: ae4571286b42ed54ba0c8d6a0c2453eb, type: 3}
+  portaDronAereoPrefab: {fileID: 3191160084376428186, guid: bb0be04510dd00e4db5f580b06b1fc01, type: 3}
+  portaDronNavalPrefab: {fileID: 5458765581660240465, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
   minPos: 0.01
   minRot: 0.5
 --- !u!4 &1289264268 stripped
@@ -1793,9 +1777,11 @@ MonoBehaviour:
   objetivo: {fileID: 1289264268}
   cam: {fileID: 330585546}
   esAereo: 0
-  offsetArriba: {x: 0, y: 7, z: 0}
+  offsetArribaNaval: {x: 0, y: 7, z: 0}
+  offsetArribaAereo: {x: 0, y: 14, z: 0}
   rotArribaLocal: {x: 90, y: 0, z: 0}
-  offsetApuntar: {x: 5, y: 0, z: 0}
+  offsetApuntarNaval: {x: 5, y: 2, z: 0}
+  offsetApuntarAereo: {x: 7, y: 4, z: 0}
   rotApuntarLocal: {x: 5, y: -90, z: 0}
   offsetMapa: {x: 0, y: 40, z: 0}
   rotMapaLocal: {x: 90, y: 0, z: 0}

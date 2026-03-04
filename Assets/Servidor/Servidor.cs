@@ -27,8 +27,10 @@ public partial class Servidor : MonoBehaviour
     [SerializeField] private float smoothRot = 12f;
 
     [Header("Prefabs")]
-    [SerializeField] private GameObject dronPrefab;
-    [SerializeField] private GameObject portaDronPrefab;
+    [SerializeField] private GameObject dronAereoPrefab;
+    [SerializeField] private GameObject dronNavalPrefab;
+    [SerializeField] private GameObject portaDronAereoPrefab;
+    [SerializeField] private GameObject portaDronNavalPrefab;
 
     private StateResponse lastState;
 
@@ -85,13 +87,6 @@ public partial class Servidor : MonoBehaviour
             Debug.LogError("Asigná porta1 y porta2 en el Inspector.");
             return;
         }
-
-        if (dronesP1 == null || dronesP1.Length == 0)
-            Debug.LogWarning("dronesP1 está vacío (aéreo). Si es intencional, ok.");
-
-        if (dronesP2 == null || dronesP2.Length == 0)
-            Debug.LogWarning("dronesP2 está vacío (naval). Si es intencional, ok.");
-
         RebuildObjectMapsForSlotPreview();
     }
 

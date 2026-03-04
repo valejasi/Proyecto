@@ -96,4 +96,6 @@ public class Mover : MonoBehaviour
             Time.fixedDeltaTime * suavizadoMovimiento
         );
     }
+    
+    
 }

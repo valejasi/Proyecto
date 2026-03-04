@@ -94,6 +94,7 @@ public partial class Servidor
 
     bool DronMove(int i, Transform t)
     {
+        if (ultimaPos == null || i >= ultimaPos.Length) return true;
         if ((t.position - ultimaPos[i]).sqrMagnitude > minPos * minPos)
             return true;
         if (Quaternion.Angle(t.rotation, ultimaRot[i]) > minRot)
@@ -289,6 +290,7 @@ public partial class Servidor
 
         // Register in my objects map
         misObjetos[objId] = dronObj.transform;
+        idPorTransformLocal[dronObj.transform] = objId; 
 
         // Expand ultimaPos/ultimaRot arrays if needed
         if (ultimaPos == null || index >= ultimaPos.Length)

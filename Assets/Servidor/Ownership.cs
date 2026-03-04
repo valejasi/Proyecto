@@ -1,3 +1,4 @@
+
 using UnityEngine;
 //define que pertenece al jugador local y remoto
 //configuraciones fisicas y de control

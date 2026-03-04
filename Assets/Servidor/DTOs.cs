@@ -9,6 +9,8 @@ public partial class Servidor
         public string codigo;
         public string sessionId;
         public int jugadores;
+        public int portaId;
+        public int[] dronesIds;
     }
 
     [System.Serializable]
@@ -29,7 +31,6 @@ public partial class Servidor
     [System.Serializable]
     public class VidaData
     {
-        public string sessionId;
         public int objId;
         public int vida;
     }

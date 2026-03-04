@@ -1188,7 +1188,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1238109335}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b8e8268a5f6faf74ca308695fc05c818, type: 3}
   m_Name: 
@@ -1224,6 +1224,7 @@ MonoBehaviour:
   portaDronPrefab: {fileID: 0}
   minPos: 0.01
   minRot: 0.5
+  remoteLerp: 15
 --- !u!4 &1289264268 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4354643041715167926, guid: ec89a1e14fae9304988faac8ad8191d5, type: 3}

@@ -22,10 +22,18 @@ public partial class Servidor
             string json = req.downloadHandler.text;
             Debug.Log("Create JSON: " + json);
 
-            JoinResponse resp = JsonUtility.FromJson<JoinResponse>(json);
+           JoinResponse resp = JsonUtility.FromJson<JoinResponse>(json);
+
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
+            miPortaId = resp.portaId;
 
+            Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
+
+            for (int i = 0; i < misDrones.Length; i++)
+            {
+                idPorTransformLocal[misDrones[i]] = resp.dronesIds[i];
+            }
             // HOST = SLOT 1
             SetSlot(1);
             IniciarSyncAutomatico();
@@ -60,6 +68,14 @@ public partial class Servidor
 
             codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
+            miPortaId = resp.portaId;
+
+            Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
+
+            for (int i = 0; i < misDrones.Length; i++)
+            {
+                idPorTransformLocal[misDrones[i]] = resp.dronesIds[i];
+            }
 
             // CLIENTE = SLOT 2
             SetSlot(2);

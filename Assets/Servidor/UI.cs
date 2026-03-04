@@ -20,7 +20,6 @@ public partial class Servidor
             for (int i = 0; i < lastState.vidas.Length; i++)
             {
                 var v = lastState.vidas[i];
-                if (v.sessionId != miSessionId) continue;
                 GUI.Label(new Rect(10, y, 900, 20), $"{v.objId}: {v.vida}");
                 y += 18;
             }

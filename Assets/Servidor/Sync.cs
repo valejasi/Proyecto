@@ -201,8 +201,11 @@ public partial class Servidor
                 if (p.slot != slotRemoto)
                     continue;
 
-                if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null)
+                if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null){
+                    // si recibe id de un dron pero el dron no existe, lo crea
+                    CrearObjetoRemoto(p);
                     continue;
+                }
 
                 Vector3 pos = new Vector3(p.x, p.y, p.z);
                 Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);

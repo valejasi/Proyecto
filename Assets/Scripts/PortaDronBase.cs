@@ -16,7 +16,7 @@ public abstract class PortaDronBase : MonoBehaviour
 
     protected virtual void Start()
     {
-            Debug.Log("PortaDronBase Start ejecutado");
+        Debug.Log("PortaDronBase Start ejecutado");
         vidaActual = vidaMaxima;
     }
 

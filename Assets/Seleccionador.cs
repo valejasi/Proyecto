@@ -78,9 +78,8 @@ public class Seleccionador : MonoBehaviour
 
                 Rigidbody rb = objetoSeleccionado.GetComponent<Rigidbody>();
                 if (rb != null)
-                {
+                {   
                     rb.isKinematic = true;
-                    rb.linearVelocity = Vector3.zero;
                 }
 
                 Debug.Log("PortaDron fijado con V");

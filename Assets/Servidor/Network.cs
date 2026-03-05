@@ -33,15 +33,23 @@ public partial class Servidor
 
             Transform[] misDrones = (miSlot == 1) ? dronesP1 : dronesP2;
 
-            for (int i = 0; i < misDrones.Length; i++)
+           for (int i = 0; i < misDrones.Length; i++)
             {
-                if (resp.dronesIds[i] == -1) 
+                if (resp.dronesIds[i] == -1) continue; // fix del bug anterior
                 idPorTransformLocal[misDrones[i]] = resp.dronesIds[i];
-            }
-            
-            IniciarSyncAutomatico();
 
-            Debug.Log($"CREADO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
+                // Activar disparo en drones locales
+                Disparo d = misDrones[i].GetComponent<Disparo>();
+                Debug.Log($"[Disparo] dron {i}: componente={d != null}");
+                if (d != null)
+                {
+                    d.isMine = true;
+                    d.sessionId = miSessionId;
+                    d.codigoSala = codigoSala;
+                    d.objIdDisparador = resp.dronesIds[i];
+                    d.baseUrl = baseUrl;
+                }
+            }
         }
     }
 
@@ -80,14 +88,20 @@ public partial class Servidor
 
             for (int i = 0; i < misDrones.Length; i++)
             {
-                if (resp.dronesIds[i] == -1) 
+                if (resp.dronesIds[i] == -1) continue; // fix del bug anterior
                 idPorTransformLocal[misDrones[i]] = resp.dronesIds[i];
+
+                // Activar disparo en drones locales
+                Disparo d = misDrones[i].GetComponent<Disparo>();
+                if (d != null)
+                {
+                    d.isMine = true;
+                    d.sessionId = miSessionId;
+                    d.codigoSala = codigoSala;
+                    d.objIdDisparador = resp.dronesIds[i];
+                    d.baseUrl = baseUrl;
+                }
             }
-
-            
-            IniciarSyncAutomatico();
-
-            Debug.Log($"UNIDO. codigoSala={codigoSala} miSessionId={miSessionId} jugadores={resp.jugadores}");
         }
     }
 

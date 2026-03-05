@@ -198,6 +198,7 @@ GameObject:
   - component: {fileID: -8693679082999384546}
   - component: {fileID: 3244526796154676107}
   - component: {fileID: 8000974215212551812}
+  - component: {fileID: 999198154662817724}
   m_Layer: 0
   m_Name: DronNaval
   m_TagString: Untagged
@@ -222,6 +223,7 @@ Transform:
   - {fileID: 2976366021987947188}
   - {fileID: 5434356896979087495}
   - {fileID: 962346119208287386}
+  - {fileID: 3176553618476231946}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2047723263871901021
@@ -379,7 +381,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 1
+  m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -405,6 +407,26 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &999198154662817724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6645096671164301066}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 613384675fe4dd04aa90ed861cbd66fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Disparo
+  balaPrefab: {fileID: 1148929857187239695, guid: 195bdd5f8bc11104981d49f5719a299b, type: 3}
+  firePoint: {fileID: 3176553618476231946}
+  fuerza: 20
+  isMine: 0
+  sessionId: 
+  codigoSala: 
+  baseUrl: https://proyecto-y1ud.onrender.com
+  objIdDisparador: 0
 --- !u!1 &7005231893424106495
 GameObject:
   m_ObjectHideFlags: 0
@@ -586,3 +608,34 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8030300089469564528
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3176553618476231946}
+  m_Layer: 0
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3176553618476231946
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8030300089469564528}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2455176228241295603}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

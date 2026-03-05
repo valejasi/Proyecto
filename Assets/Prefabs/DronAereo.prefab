@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 8401457081365729236}
   - component: {fileID: 7398325354256012049}
   - component: {fileID: 468327458930406894}
+  - component: {fileID: -79850672909604177}
   m_Layer: 0
   m_Name: DronAereo
   m_TagString: Untagged
@@ -41,6 +42,7 @@ Transform:
   - {fileID: 8592752589461900925}
   - {fileID: 5417908970637441392}
   - {fileID: 5586336819088241949}
+  - {fileID: 2856287595553683205}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2566716331861621521
@@ -224,6 +226,26 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &-79850672909604177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2176188128740564376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 613384675fe4dd04aa90ed861cbd66fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Disparo
+  balaPrefab: {fileID: 1148929857187239695, guid: 195bdd5f8bc11104981d49f5719a299b, type: 3}
+  firePoint: {fileID: 2856287595553683205}
+  fuerza: 20
+  isMine: 0
+  sessionId: 
+  codigoSala: 
+  baseUrl: https://proyecto-y1ud.onrender.com
+  objIdDisparador: 0
 --- !u!1 &2391434149645541158
 GameObject:
   m_ObjectHideFlags: 0
@@ -495,6 +517,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &7307151050920512514
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2856287595553683205}
+  m_Layer: 0
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2856287595553683205
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7307151050920512514}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.09, y: 0.02, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8123937429248137792}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9018267944390582094
 GameObject:
   m_ObjectHideFlags: 0

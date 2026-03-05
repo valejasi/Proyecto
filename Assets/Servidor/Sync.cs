@@ -294,10 +294,7 @@ public partial class Servidor
         if (d != null)
         {
             d.isMine = true;
-            d.sessionId = miSessionId;
-            d.codigoSala = codigoSala;
             d.objIdDisparador = objId;
-            d.baseUrl = baseUrl;
         }
 
         // Register in my objects map
@@ -328,58 +325,92 @@ public partial class Servidor
 
     private readonly HashSet<string> proyectilesVivos = new HashSet<string>();
 
-void ProcesarProyectilesRemotos(ProyectilData[] proyectiles)
-{
-    if (proyectiles == null) return;
-
-    HashSet<string> idsActuales = new HashSet<string>();
-
-    foreach (var p in proyectiles)
+    void ProcesarProyectilesRemotos(ProyectilData[] proyectiles)
     {
-        idsActuales.Add(p.id);
+        if (proyectiles == null) return;
 
-        if (proyectilesVivos.Contains(p.id)) continue;
+        HashSet<string> idsActuales = new HashSet<string>();
 
-        proyectilesVivos.Add(p.id);
-        SpawnProyectilRemoto(p);
+        foreach (var p in proyectiles)
+        {
+            idsActuales.Add(p.id);
+
+            if (proyectilesVivos.Contains(p.id)) continue;
+
+            proyectilesVivos.Add(p.id);
+            SpawnProyectilRemoto(p);
+        }
+
+        proyectilesVivos.IntersectWith(idsActuales);
     }
 
-    proyectilesVivos.IntersectWith(idsActuales);
-}
-
-void SpawnProyectilRemoto(ProyectilData p)
-{
-    if (balaPrefabRemoto == null)
+    void SpawnProyectilRemoto(ProyectilData p)
     {
-        Debug.LogWarning("balaPrefabRemoto no asignado en el Inspector.");
-        return;
+        if (balaPrefabRemoto == null)
+        {
+            Debug.LogWarning("balaPrefabRemoto no asignado en el Inspector.");
+            return;
+        }
+
+        Vector3 pos = new Vector3(p.x, p.y, p.z);
+        GameObject bala = Instantiate(balaPrefabRemoto, pos, Quaternion.identity);
+        Destroy(bala, 3f);
+
+        Rigidbody rb = bala.GetComponent<Rigidbody>();
+        if (rb != null)
+            rb.linearVelocity = new Vector3(p.dx, p.dy, p.dz) * p.velocidad;
     }
 
-    Vector3 pos = new Vector3(p.x, p.y, p.z);
-    GameObject bala = Instantiate(balaPrefabRemoto, pos, Quaternion.identity);
-    Destroy(bala, 3f);
-
-    Rigidbody rb = bala.GetComponent<Rigidbody>();
-    if (rb != null)
-        rb.linearVelocity = new Vector3(p.dx, p.dy, p.dz) * p.velocidad;
-}
-
-void ProcesarVidas(VidaData[] vidas)
-{
-    if (vidas == null) return;
-
-    foreach (var v in vidas)
+    void ProcesarVidas(VidaData[] vidas)
     {
-        Transform t = null;
-        misObjetos.TryGetValue(v.objId, out t);
-        if (t == null) objetosRemotos.TryGetValue(v.objId, out t);
-        if (t == null) continue;
+        if (vidas == null) return;
 
-        DronBase dron = t.GetComponent<DronBase>();
-        if (dron != null) { dron.SetVidaDesdeServidor(v.vida); continue; }
+        foreach (var v in vidas)
+        {
+            Transform t = null;
+            misObjetos.TryGetValue(v.objId, out t);
+            if (t == null) objetosRemotos.TryGetValue(v.objId, out t);
+            if (t == null) continue;
 
-        PortaDronBase porta = t.GetComponent<PortaDronBase>();
-        if (porta != null) porta.SetVidaDesdeServidor(v.vida);
+            DronBase dron = t.GetComponent<DronBase>();
+            if (dron != null) { dron.SetVidaDesdeServidor(v.vida); continue; }
+
+            PortaDronBase porta = t.GetComponent<PortaDronBase>();
+            if (porta != null) porta.SetVidaDesdeServidor(v.vida);
+        }
+    }
+
+
+ public IEnumerator DispararDesdeServidor(int objIdDisparador, Vector3 origen, Vector3 dir, float velocidad)
+{
+    if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+    if (!portaEnviada) yield break;
+
+    string url = baseUrl + "/game/disparar/" + codigoSala;
+
+    DisparoRequest reqBody = new DisparoRequest
+    {
+        sessionId = miSessionId,
+        objIdDisparador = objIdDisparador,
+        x = origen.x, y = origen.y, z = origen.z,
+        dx = dir.normalized.x, dy = dir.normalized.y, dz = dir.normalized.z,
+        velocidad = velocidad,
+        rangoMax = 30,
+        danio = 1
+    };
+
+    string json = JsonUtility.ToJson(reqBody);
+
+    using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+    {
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+        req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        req.SetRequestHeader("Content-Type", "application/json");
+        yield return req.SendWebRequest();
+
+        if (req.result != UnityWebRequest.Result.Success)
+            Debug.LogWarning("Disparar ERROR: " + req.error + " | " + req.downloadHandler.text);
     }
 }
 }

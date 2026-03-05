@@ -1,6 +1,4 @@
 using UnityEngine;
-using UnityEngine.Networking;
-using System.Collections;
 
 public class Disparo : MonoBehaviour
 {
@@ -8,12 +6,8 @@ public class Disparo : MonoBehaviour
     public Transform firePoint;
     public float fuerza = 20f;
 
-    // Llenar desde el Servidor (igual que isMine en Mover)
-    public bool isMine = true;
-    public string sessionId;
-    public string codigoSala;
-    public string baseUrl = "https://proyecto-y1ud.onrender.com";
-    public int objIdDisparador; // el id del dron que dispara
+    public bool isMine = false;
+    public int objIdDisparador;
 
     private Municion municion;
     private Mover mover;
@@ -26,18 +20,17 @@ public class Disparo : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-            Debug.Log($"[Disparo] clic. isMine={isMine} seleccionado={mover?.estaSeleccionado}");
-
         if (!isMine || mover == null || !mover.estaSeleccionado) return;
-
         if (municion != null && !municion.TieneMunicion()) return;
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
             SpawnBala(firePoint.position, firePoint.rotation, firePoint.forward);
-            StartCoroutine(EnviarDisparo());
             if (municion != null) municion.GastarUnaBala();
+
+            Servidor srv = FindAnyObjectByType<Servidor>();
+            if (srv != null)
+                srv.StartCoroutine(srv.DispararDesdeServidor(objIdDisparador, firePoint.position, firePoint.forward, fuerza));
         }
     }
 
@@ -47,38 +40,5 @@ public class Disparo : MonoBehaviour
         Destroy(bala, 3f);
         Rigidbody rb = bala.GetComponent<Rigidbody>();
         if (rb != null) rb.linearVelocity = direccion * fuerza;
-    }
-
-    IEnumerator EnviarDisparo()
-    {
-        string url = baseUrl + "/game/disparar/" + codigoSala;
-
-        Vector3 pos = firePoint.position;
-        Vector3 dir = firePoint.forward;
-
-        var reqBody = new Servidor.DisparoRequest
-        {
-            sessionId = sessionId,
-            objIdDisparador = objIdDisparador,
-            x = pos.x, y = pos.y, z = pos.z,
-            dx = dir.x, dy = dir.y, dz = dir.z,
-            velocidad = fuerza,
-            rangoMax = 30,
-            danio = 1
-        };
-
-        string json = JsonUtility.ToJson(reqBody);
-
-        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
-        {
-            byte[] body = System.Text.Encoding.UTF8.GetBytes(json);
-            req.uploadHandler = new UploadHandlerRaw(body);
-            req.downloadHandler = new DownloadHandlerBuffer();
-            req.SetRequestHeader("Content-Type", "application/json");
-            yield return req.SendWebRequest();
-
-            if (req.result != UnityWebRequest.Result.Success)
-                Debug.LogError("Disparo ERROR: " + req.error + " | " + req.downloadHandler.text);
-        }
     }
 }

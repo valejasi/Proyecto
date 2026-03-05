@@ -44,10 +44,7 @@ public partial class Servidor
                 if (d != null)
                 {
                     d.isMine = true;
-                    d.sessionId = miSessionId;
-                    d.codigoSala = codigoSala;
                     d.objIdDisparador = resp.dronesIds[i];
-                    d.baseUrl = baseUrl;
                 }
             }
         }
@@ -96,10 +93,7 @@ public partial class Servidor
                 if (d != null)
                 {
                     d.isMine = true;
-                    d.sessionId = miSessionId;
-                    d.codigoSala = codigoSala;
                     d.objIdDisparador = resp.dronesIds[i];
-                    d.baseUrl = baseUrl;
                 }
             }
         }

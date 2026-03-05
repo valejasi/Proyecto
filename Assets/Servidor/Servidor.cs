@@ -41,9 +41,8 @@ public partial class Servidor : MonoBehaviour
     protected string codigoSala = "";
     protected string miSessionId = "";
     protected string codigoIngresado = "";
-
+   
     protected int miPortaId;
-
 
     // Slot: 1 = host (aéreo), 2 = join (naval)
     protected int miSlot = 0;

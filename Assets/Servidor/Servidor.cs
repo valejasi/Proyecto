@@ -93,7 +93,7 @@ public partial class Servidor : MonoBehaviour
     void Update()
     {
         // Host: crear sala
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
             StartCoroutine(CreateAndStore());
 
         // Join: escribir código + Enter

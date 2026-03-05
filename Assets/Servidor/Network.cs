@@ -47,6 +47,7 @@ public partial class Servidor
                     d.objIdDisparador = resp.dronesIds[i];
                 }
             }
+            IniciarSyncAutomatico();
         }
     }
 
@@ -97,6 +98,7 @@ public partial class Servidor
                 }
             }
         }
+        IniciarSyncAutomatico();
     }
 
     //GUARDAR Y LEVANTAR PARTIDA

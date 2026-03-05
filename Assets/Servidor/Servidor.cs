@@ -31,6 +31,7 @@ public partial class Servidor : MonoBehaviour
     [SerializeField] private GameObject dronNavalPrefab;
     [SerializeField] private GameObject portaDronAereoPrefab;
     [SerializeField] private GameObject portaDronNavalPrefab;
+    [SerializeField] private GameObject balaPrefabRemoto;
 
     private StateResponse lastState;
 

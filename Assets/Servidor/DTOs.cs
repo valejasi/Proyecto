@@ -48,6 +48,8 @@ public partial class Servidor
     {
         public string id;
         public float x, y, z;
+        public float dx, dy, dz;   
+        public float velocidad; 
     }
 
     [System.Serializable]

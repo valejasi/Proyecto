@@ -73,4 +73,11 @@ public abstract class PortaDronBase : MonoBehaviour
 
     [Header("Limites del Mapa")]
     public float anchoMapa = 60f;
+
+    public virtual void SetVidaDesdeServidor(int nuevaVida)
+    {
+        vidaActual = nuevaVida;
+        if (vidaActual <= 0)
+            Morir();
+    }
 }

@@ -27,4 +27,11 @@ public abstract class DronBase : MonoBehaviour
     }
 
     protected abstract void Morir();
+
+    public virtual void SetVidaDesdeServidor(int nuevaVida)
+{
+    vidaActual = nuevaVida;
+    if (vidaActual <= 0)
+        Morir();
+}
 }

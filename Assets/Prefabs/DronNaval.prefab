@@ -198,7 +198,8 @@ GameObject:
   - component: {fileID: -8693679082999384546}
   - component: {fileID: 3244526796154676107}
   - component: {fileID: 8000974215212551812}
-  - component: {fileID: 999198154662817724}
+  - component: {fileID: 5326599070554264190}
+  - component: {fileID: 5767721882879871188}
   m_Layer: 0
   m_Name: DronNaval
   m_TagString: Untagged
@@ -407,7 +408,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &999198154662817724
+--- !u!114 &5326599070554264190
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -422,11 +423,26 @@ MonoBehaviour:
   balaPrefab: {fileID: 1148929857187239695, guid: 195bdd5f8bc11104981d49f5719a299b, type: 3}
   firePoint: {fileID: 3176553618476231946}
   fuerza: 20
-  isMine: 0
+  isMine: 1
   sessionId: 
   codigoSala: 
   baseUrl: https://proyecto-y1ud.onrender.com
   objIdDisparador: 0
+--- !u!114 &5767721882879871188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6645096671164301066}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4251ac261336f9e44b13fed24da7ad95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Municion
+  municionMaxima: 5
+  municionActual: 5
+  textoMunicion: {fileID: 0}
 --- !u!1 &7005231893424106495
 GameObject:
   m_ObjectHideFlags: 0

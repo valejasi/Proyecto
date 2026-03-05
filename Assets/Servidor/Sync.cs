@@ -214,6 +214,8 @@ public partial class Servidor
                 remoteTargetPos[p.objId] = pos;
                 remoteTargetRot[p.objId] = rot;
             }
+            ProcesarProyectilesRemotos(st.proyectiles);
+            ProcesarVidas(st.vidas);
         }
     }
 
@@ -288,6 +290,16 @@ public partial class Servidor
         int baseId = (miSlot == 1) ? 8 : 2;
         int objId  = baseId + index;
 
+        Disparo d = dronObj.GetComponent<Disparo>();
+        if (d != null)
+        {
+            d.isMine = true;
+            d.sessionId = miSessionId;
+            d.codigoSala = codigoSala;
+            d.objIdDisparador = objId;
+            d.baseUrl = baseUrl;
+        }
+
         // Register in my objects map
         misObjetos[objId] = dronObj.transform;
         idPorTransformLocal[dronObj.transform] = objId;
@@ -313,4 +325,61 @@ public partial class Servidor
 
         Debug.Log($"Dron registrado: objId={objId} index={index}");
     }
+
+    private readonly HashSet<string> proyectilesVivos = new HashSet<string>();
+
+void ProcesarProyectilesRemotos(ProyectilData[] proyectiles)
+{
+    if (proyectiles == null) return;
+
+    HashSet<string> idsActuales = new HashSet<string>();
+
+    foreach (var p in proyectiles)
+    {
+        idsActuales.Add(p.id);
+
+        if (proyectilesVivos.Contains(p.id)) continue;
+
+        proyectilesVivos.Add(p.id);
+        SpawnProyectilRemoto(p);
+    }
+
+    proyectilesVivos.IntersectWith(idsActuales);
+}
+
+void SpawnProyectilRemoto(ProyectilData p)
+{
+    if (balaPrefabRemoto == null)
+    {
+        Debug.LogWarning("balaPrefabRemoto no asignado en el Inspector.");
+        return;
+    }
+
+    Vector3 pos = new Vector3(p.x, p.y, p.z);
+    GameObject bala = Instantiate(balaPrefabRemoto, pos, Quaternion.identity);
+    Destroy(bala, 3f);
+
+    Rigidbody rb = bala.GetComponent<Rigidbody>();
+    if (rb != null)
+        rb.linearVelocity = new Vector3(p.dx, p.dy, p.dz) * p.velocidad;
+}
+
+void ProcesarVidas(VidaData[] vidas)
+{
+    if (vidas == null) return;
+
+    foreach (var v in vidas)
+    {
+        Transform t = null;
+        misObjetos.TryGetValue(v.objId, out t);
+        if (t == null) objetosRemotos.TryGetValue(v.objId, out t);
+        if (t == null) continue;
+
+        DronBase dron = t.GetComponent<DronBase>();
+        if (dron != null) { dron.SetVidaDesdeServidor(v.vida); continue; }
+
+        PortaDronBase porta = t.GetComponent<PortaDronBase>();
+        if (porta != null) porta.SetVidaDesdeServidor(v.vida);
+    }
+}
 }

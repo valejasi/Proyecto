@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 7398325354256012049}
   - component: {fileID: 468327458930406894}
   - component: {fileID: -79850672909604177}
+  - component: {fileID: 7542369876399995703}
   m_Layer: 0
   m_Name: DronAereo
   m_TagString: Untagged
@@ -246,6 +247,21 @@ MonoBehaviour:
   codigoSala: 
   baseUrl: https://proyecto-y1ud.onrender.com
   objIdDisparador: 0
+--- !u!114 &7542369876399995703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2176188128740564376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4251ac261336f9e44b13fed24da7ad95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Municion
+  municionMaxima: 5
+  municionActual: 5
+  textoMunicion: {fileID: 0}
 --- !u!1 &2391434149645541158
 GameObject:
   m_ObjectHideFlags: 0

@@ -26,14 +26,14 @@ public class Disparo : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetKeyDown(KeyCode.Space))
             Debug.Log($"[Disparo] clic. isMine={isMine} seleccionado={mover?.estaSeleccionado}");
 
         if (!isMine || mover == null || !mover.estaSeleccionado) return;
 
         if (municion != null && !municion.TieneMunicion()) return;
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             SpawnBala(firePoint.position, firePoint.rotation, firePoint.forward);
             StartCoroutine(EnviarDisparo());
@@ -53,19 +53,21 @@ public class Disparo : MonoBehaviour
     {
         string url = baseUrl + "/game/disparar/" + codigoSala;
 
-        // Armar el JSON manualmente (sin Newtonsoft)
         Vector3 pos = firePoint.position;
         Vector3 dir = firePoint.forward;
 
-        string json = $@"{{
-            ""sessionId"": ""{sessionId}"",
-            ""objIdDisparador"": {objIdDisparador},
-            ""x"": {pos.x}, ""y"": {pos.y}, ""z"": {pos.z},
-            ""dx"": {dir.x}, ""dy"": {dir.y}, ""dz"": {dir.z},
-            ""velocidad"": {fuerza},
-            ""rangoMax"": 30,
-            ""danio"": 1
-        }}";
+        var reqBody = new Servidor.DisparoRequest
+        {
+            sessionId = sessionId,
+            objIdDisparador = objIdDisparador,
+            x = pos.x, y = pos.y, z = pos.z,
+            dx = dir.x, dy = dir.y, dz = dir.z,
+            velocidad = fuerza,
+            rangoMax = 30,
+            danio = 1
+        };
+
+        string json = JsonUtility.ToJson(reqBody);
 
         using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
         {
@@ -76,7 +78,7 @@ public class Disparo : MonoBehaviour
             yield return req.SendWebRequest();
 
             if (req.result != UnityWebRequest.Result.Success)
-                Debug.LogError("Disparo ERROR: " + req.error);
+                Debug.LogError("Disparo ERROR: " + req.error + " | " + req.downloadHandler.text);
         }
     }
 }

@@ -47,6 +47,7 @@ public partial class Servidor
     public class ProyectilData
     {
         public string id;
+        public string sessionId;
         public float x, y, z;
         public float dx, dy, dz;   
         public float velocidad; 

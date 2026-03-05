@@ -300,6 +300,12 @@ public partial class Servidor
             idsActuales.Add(p.id);
 
             if (proyectilesVivos.Contains(p.id)) continue;
+            
+            if (p.sessionId == miSessionId)
+            {
+                proyectilesVivos.Add(p.id); 
+                continue;
+            }
 
             proyectilesVivos.Add(p.id);
             SpawnProyectilRemoto(p);
@@ -337,44 +343,52 @@ public partial class Servidor
             if (t == null) continue;
 
             DronBase dron = t.GetComponent<DronBase>();
-            if (dron != null) { dron.SetVidaDesdeServidor(v.vida); continue; }
+            if (dron != null) { 
+                dron.SetVidaDesdeServidor(v.vida); 
+                if (v.vida <= 0) {
+                    misObjetos.Remove(v.objId);
+                    objetosRemotos.Remove(v.objId);
+                }
+                continue; 
+            }
 
             PortaDronBase porta = t.GetComponent<PortaDronBase>();
-            if (porta != null) porta.SetVidaDesdeServidor(v.vida);
+            if (porta != null) 
+                porta.SetVidaDesdeServidor(v.vida);
         }
     }
 
 
- public IEnumerator DispararDesdeServidor(int objIdDisparador, Vector3 origen, Vector3 dir, float velocidad)
-{
-    if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
-    if (!portaEnviada) yield break;
-
-    string url = baseUrl + "/game/disparar/" + codigoSala;
-
-    DisparoRequest reqBody = new DisparoRequest
+    public IEnumerator DispararDesdeServidor(int objIdDisparador, Vector3 origen, Vector3 dir, float velocidad)
     {
-        sessionId = miSessionId,
-        objIdDisparador = objIdDisparador,
-        x = origen.x, y = origen.y, z = origen.z,
-        dx = dir.normalized.x, dy = dir.normalized.y, dz = dir.normalized.z,
-        velocidad = velocidad,
-        rangoMax = 30,
-        danio = 1
-    };
+        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
+        if (!portaEnviada) yield break;
 
-    string json = JsonUtility.ToJson(reqBody);
+        string url = baseUrl + "/game/disparar/" + codigoSala;
 
-    using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
-    {
-        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
-        req.uploadHandler = new UploadHandlerRaw(bodyRaw);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.SetRequestHeader("Content-Type", "application/json");
-        yield return req.SendWebRequest();
+        DisparoRequest reqBody = new DisparoRequest
+        {
+            sessionId = miSessionId,
+            objIdDisparador = objIdDisparador,
+            x = origen.x, y = origen.y, z = origen.z,
+            dx = dir.normalized.x, dy = dir.normalized.y, dz = dir.normalized.z,
+            velocidad = velocidad,
+            rangoMax = 30,
+            danio = 1
+        };
 
-        if (req.result != UnityWebRequest.Result.Success)
-            Debug.LogWarning("Disparar ERROR: " + req.error + " | " + req.downloadHandler.text);
+        string json = JsonUtility.ToJson(reqBody);
+
+        using (UnityWebRequest req = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+            req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                Debug.LogWarning("Disparar ERROR: " + req.error + " | " + req.downloadHandler.text);
+        }
     }
-}
 }

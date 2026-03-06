@@ -138,10 +138,22 @@ public partial class Servidor
                 Debug.LogError("Error Load: " + req.error);
                 yield break;
             }
+            
+            string json = req.downloadHandler.text;
+            JoinResponse resp = JsonUtility.FromJson<JoinResponse>(json);
+
+            codigoSala = resp.codigo;   // confirmar código desde respuesta
+            miSessionId = resp.sessionId;
+            miPortaId = resp.portaId;
+            portaEnviada = true;
+            SetSlot(1); // quien llama loadAndCreate es siempre aéreo
+
+            Debug.Log("Sala recreada como HOST (aéreo): " + codigoSala);
         }
 
         // 🔥 después del load traemos estado
         yield return StartCoroutine(GetStateCompletoYReconstruir());
+        IniciarSyncAutomatico();
     }
 
     IEnumerator GetStateCompletoYReconstruir()

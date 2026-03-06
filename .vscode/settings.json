@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "ProyectoDron.slnx"
+    "dotnet.defaultSolution": "Proyecto-1.slnx"
 }

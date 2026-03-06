@@ -119,8 +119,10 @@ public partial class Servidor : MonoBehaviour
             GuardarPartida();
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha2)) {
-            CargarPartida();
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            codigoSala = codigoIngresado.Trim().ToLower();
+            StartCoroutine(CargarYReconstruir());
         }
 
         // Aplicar smoothing a objetos remotos

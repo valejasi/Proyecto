@@ -7,7 +7,7 @@ using UnityEngine;
 public partial class Servidor : MonoBehaviour
 {
     [Header("Servidor")]
-    [SerializeField] private string baseUrl = "https://proyecto-y1ud.onrender.com";
+    [SerializeField] public string baseUrl = "https://proyecto-y1ud.onrender.com";
 
     [Header("PORTADRONES (arrastrar)")]
     [SerializeField] private Transform porta1; // host (aéreo)
@@ -38,14 +38,14 @@ public partial class Servidor : MonoBehaviour
     // ==========================
     // Estado sala
     // ==========================
-    protected string codigoSala = "";
-    protected string miSessionId = "";
-    protected string codigoIngresado = "";
+    public string codigoSala = "";
+    public string miSessionId = "";
+    public string codigoIngresado = "";
    
     protected int miPortaId;
 
     // Slot: 1 = host (aéreo), 2 = join (naval)
-    protected int miSlot = 0;
+    public int miSlot = 0;
 
     // Coroutines
     protected Coroutine sendLoop;
@@ -76,6 +76,8 @@ public partial class Servidor : MonoBehaviour
     // ==========================
     void Awake()
     {
+        if (FindObjectsByType<Servidor>(FindObjectsSortMode.None).Length > 1) { Destroy(gameObject); return; }
+        DontDestroyOnLoad(gameObject);
         waitIntervalo = new WaitForSeconds(intervalo);
     }
 

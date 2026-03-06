@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 //sala, unirse, solicitudes y almacenamiento de info de la session
 public partial class Servidor
 {
-    IEnumerator CreateAndStore()
+    public IEnumerator CreateAndStore()
     {
         string url = baseUrl + "/game/create";
         Debug.Log("GET: " + url);
@@ -51,7 +51,7 @@ public partial class Servidor
         }
     }
 
-    IEnumerator JoinAndStore(string code)
+    public IEnumerator JoinAndStore(string code)
     {
         string url = baseUrl + "/game/join/" + code;
         Debug.Log("GET: " + url);

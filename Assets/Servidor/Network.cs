@@ -153,7 +153,6 @@ public partial class Servidor
 
         // 🔥 después del load traemos estado
         yield return StartCoroutine(GetStateCompletoYReconstruir());
-        IniciarSyncAutomatico();
     }
 
     IEnumerator GetStateCompletoYReconstruir()

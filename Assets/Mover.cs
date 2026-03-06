@@ -57,7 +57,9 @@ public class Mover : MonoBehaviour
 
         // ===== INPUT MOVIMIENTO =====
         forwardInput = Input.GetAxis("Vertical");     // W / S
-        strafeInput = Input.GetAxis("Horizontal");    // A / D
+
+        float rotacionInput = Input.GetAxis("Horizontal");
+        transform.Rotate(Vector3.up * rotacionInput * sensibilidadMouse * Time.deltaTime); // A D rotan horizontalmente
 
         verticalInput = 0f;
         if (Input.GetKey(KeyCode.R)) verticalInput = 1f;

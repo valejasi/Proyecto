@@ -197,9 +197,6 @@ public partial class Servidor
                 if (p.slot != slotRemoto)
                     continue;
 
-                //PARA EL TESTEO
-                bool found = objetosRemotos.TryGetValue(p.objId, out Transform tCheck);
-                Debug.Log($"objId={p.objId} found={found} transform={tCheck?.name ?? "null"}");
 
                 if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null){
                     Debug.Log($"No encontrado en objetosRemotos, llamando CrearObjetoRemoto objId={p.objId}");

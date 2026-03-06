@@ -355,7 +355,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Combustible
   combustibleMaximo: 100
   combustibleActual: 100
-  consumoPorMetro: 25
+  consumoPorMetro: 5
   demoraParaRecargar: 2
   recargaPorSegundo: 20
   barraCombustible: {fileID: 0}
@@ -424,9 +424,6 @@ MonoBehaviour:
   firePoint: {fileID: 3176553618476231946}
   fuerza: 20
   isMine: 1
-  sessionId: 
-  codigoSala: 
-  baseUrl: https://proyecto-y1ud.onrender.com
   objIdDisparador: 0
 --- !u!114 &5767721882879871188
 MonoBehaviour:

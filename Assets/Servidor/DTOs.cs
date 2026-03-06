@@ -20,12 +20,20 @@ public partial class Servidor
     }
 
     [System.Serializable]
+    public class ResultadoData
+    {
+        public string estado;
+        public int segundosRestantes;
+    }
+
+    [System.Serializable]
     public class StateResponse
     {
         public PositionData[] posiciones;
         public VidaData[] vidas;
         public AmmoData[] municion;
         public ProyectilData[] proyectiles;
+        public ResultadoData resultado;
     }
 
     [System.Serializable]

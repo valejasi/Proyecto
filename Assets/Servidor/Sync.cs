@@ -216,6 +216,7 @@ public partial class Servidor
             }
             ProcesarProyectilesRemotos(st.proyectiles);
             ProcesarVidas(st.vidas);
+            ProcesarResultado(st.resultado); 
         }
     }
 
@@ -356,6 +357,14 @@ public partial class Servidor
             if (porta != null) 
                 porta.SetVidaDesdeServidor(v.vida);
         }
+    }
+
+    void ProcesarResultado(ResultadoData resultado)
+    {
+        if (resultado == null) return;
+        PantallaResultado pantalla = FindAnyObjectByType<PantallaResultado>();
+        if (pantalla != null)
+            pantalla.ActualizarEstado(resultado, miSlot.ToString());
     }
 
 

@@ -54,6 +54,10 @@ public partial class Servidor : MonoBehaviour
     // Porta: se coloca una vez
     protected bool portaEnviada = false;
 
+    
+    public string GetSessionId() => miSessionId;
+    public int GetSlot() => miSlot;
+
     // Remotos smoothing
     protected readonly Dictionary<int, Vector3> remoteTargetPos = new Dictionary<int, Vector3>();
     protected readonly Dictionary<int, Quaternion> remoteTargetRot = new Dictionary<int, Quaternion>();

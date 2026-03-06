@@ -24,6 +24,7 @@ public partial class Servidor
     {
         public string estado;
         public int segundosRestantes;
+        public int slotSinPorta;
     }
 
     [System.Serializable]

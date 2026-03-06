@@ -16,38 +16,50 @@ public class PantallaResultado : MonoBehaviour
         panelResultado.SetActive(false);
     }
 
-    public void ActualizarEstado(Servidor.ResultadoData resultado, string miSlot)
+   public void ActualizarEstado(Servidor.ResultadoData resultado, string miSlot)
     {
         if (resultado == null) return;
+
+        Debug.Log($"ActualizarEstado: estado={resultado.estado} miSlot={miSlot} slotSinPorta={resultado.slotSinPorta}");
 
         switch (resultado.estado)
         {
             case "JUGANDO":
                 panelResultado.SetActive(false);
-                textoCuenta.text = "";
+                if (textoCuenta != null) textoCuenta.text = "";
                 break;
 
             case "CUENTA_REGRESIVA":
                 panelResultado.SetActive(false);
-                textoCuenta.text = "⚠️ Portadron destruido! " + resultado.segundosRestantes + "s";
+                if (textoCuenta != null)
+                {
+                    textoCuenta.gameObject.SetActive(true);
+                    if (int.Parse(miSlot) == resultado.slotSinPorta)
+                        textoCuenta.text = "⚠️ Tu portadron fue destruido! " + resultado.segundosRestantes + "s";
+                    else
+                        textoCuenta.text = "💀 Portadron enemigo destruido! " + resultado.segundosRestantes + "s";
+                }
                 break;
 
             case "VICTORIA_HOST":
                 panelResultado.SetActive(true);
-                textoResultado.text = (miSlot == "1") ? "¡VICTORIA!" : "DERROTA";
-                textoCuenta.text = "";
+                if (textoCuenta != null) textoCuenta.text = "";
+                if (textoResultado != null)
+                    textoResultado.text = (miSlot == "1") ? "¡VICTORIA!" : "DERROTA";
                 break;
 
             case "VICTORIA_JOIN":
                 panelResultado.SetActive(true);
-                textoResultado.text = (miSlot == "2") ? "¡VICTORIA!" : "DERROTA";
-                textoCuenta.text = "";
+                if (textoCuenta != null) textoCuenta.text = "";
+                if (textoResultado != null)
+                    textoResultado.text = (miSlot == "2") ? "¡VICTORIA!" : "DERROTA";
                 break;
 
             case "EMPATE":
                 panelResultado.SetActive(true);
-                textoResultado.text = "EMPATE";
-                textoCuenta.text = "";
+                if (textoCuenta != null) textoCuenta.text = "";
+                if (textoResultado != null)
+                    textoResultado.text = "EMPATE";
                 break;
         }
     }

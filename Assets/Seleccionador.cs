@@ -8,7 +8,6 @@ public class Seleccionador : MonoBehaviour
 
     void Update()
     {
-        //detecto click izquierdo
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -16,7 +15,14 @@ public class Seleccionador : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                //si algo ya esta seleccionado, lo deselecciona
+                GameObject clickeado = hit.collider.gameObject;
+
+                // Si tiene Mover pero no es mío, es del enemigo → ignorar completamente
+                Mover moverCheck = clickeado.GetComponent<Mover>();
+                if (moverCheck != null && !moverCheck.isMine)
+                    return;
+
+                // Deseleccionar objeto anterior
                 if (objetoSeleccionado != null)
                 {
                     Renderer rPrev = objetoSeleccionado.GetComponent<Renderer>();
@@ -32,10 +38,9 @@ public class Seleccionador : MonoBehaviour
                         portaPrev.estaSeleccionado = false;
                 }
 
-                objetoSeleccionado = hit.collider.gameObject;
-                Debug.Log("Seleccioné un dron: " + objetoSeleccionado.name);
+                objetoSeleccionado = clickeado;
+                Debug.Log("Seleccioné: " + objetoSeleccionado.name);
 
-                //si es un dron, acomodo la camara
                 DronBase dron = hit.collider.GetComponentInParent<DronBase>();
                 if (dron != null && camaraJugador != null)
                 {
@@ -44,7 +49,6 @@ public class Seleccionador : MonoBehaviour
                     Debug.Log("Es un dron, cambiando cámara");
                 }
 
-                //pone el objeto en amarillo, todo menos los drones
                 Renderer r = objetoSeleccionado.GetComponent<Renderer>();
                 if (r != null && dron == null)
                 {
@@ -66,8 +70,7 @@ public class Seleccionador : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.V) && objetoSeleccionado != null)
         {
             PortaDronBase porta = objetoSeleccionado.GetComponent<PortaDronBase>();
-
-            if (porta != null) // 👈 solo entra si es Naval o Aéreo
+            if (porta != null)
             {
                 Mover mover = objetoSeleccionado.GetComponent<Mover>();
                 if (mover != null)
@@ -78,19 +81,13 @@ public class Seleccionador : MonoBehaviour
 
                 Rigidbody rb = objetoSeleccionado.GetComponent<Rigidbody>();
                 if (rb != null)
-                {   
                     rb.isKinematic = true;
-                }
 
                 Debug.Log("PortaDron fijado con V");
             }
         }
 
         if (Input.GetKeyDown(KeyCode.M) && camaraJugador != null)
-        {
             camaraJugador.VolverAMapa();
-        }
     }
-
-    
 }

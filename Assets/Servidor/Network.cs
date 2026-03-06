@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
+using System.Collections.Generic;
 //gestion de comunicacion inicial con el backend
 //sala, unirse, solicitudes y almacenamiento de info de la session
 public partial class Servidor
@@ -113,7 +114,6 @@ public partial class Servidor
         Debug.Log("URL FINAL: " + url);
         UnityWebRequest request = UnityWebRequest.PostWwwForm(url, "");
         yield return request.SendWebRequest();
-
         if (request.result == UnityWebRequest.Result.Success)
             Debug.Log("Guardado OK");
         else
@@ -127,7 +127,7 @@ public partial class Servidor
 
     IEnumerator CargarYReconstruir()
     {
-        string url = baseUrl + "/game/load/" + codigoSala;
+        string url = baseUrl + "/game/loadAndCreate/" + codigoSala;
 
         using (UnityWebRequest req = UnityWebRequest.Get(url))
         {
@@ -146,7 +146,7 @@ public partial class Servidor
 
     IEnumerator GetStateCompletoYReconstruir()
     {
-         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId))
+        if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId))
             yield break;
 
         string url = baseUrl + "/game/state/" + codigoSala;
@@ -168,24 +168,139 @@ public partial class Servidor
             if (st == null || st.posiciones == null)
                 yield break;
 
+            // Construir un set de objIds muertos para consulta rápida
+            HashSet<int> muertos = new HashSet<int>();
+            if (st.vidas != null)
+            {
+                foreach (var v in st.vidas)
+                {
+                    if (v.vida <= 0)
+                        muertos.Add(v.objId);
+                }
+            }
+
             foreach (PositionData p in st.posiciones)
             {
-                if (p.sessionId == miSessionId)
+                // Ignorar objetos muertos
+                if (muertos.Contains(p.objId))
                     continue;
 
-                if (!objetosRemotos.TryGetValue(p.objId, out Transform t) || t == null)
-                {
-                    CrearObjetoRemoto(p);
-                    continue;
-                }
+                // ... resto del foreach que ya tenés
+            }
 
+            foreach (PositionData p in st.posiciones)
+            {
                 Vector3 pos = new Vector3(p.x, p.y, p.z);
                 Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);
 
-                remoteTargetPos[p.objId] = pos;
-                remoteTargetRot[p.objId] = rot;
+                if (p.sessionId == miSessionId)
+                {
+                    // Es mío
+                    if (misObjetos.TryGetValue(p.objId, out Transform tMio) && tMio != null)
+                    {
+                        // Ya existe → teleportar
+                        tMio.position = pos;
+                        tMio.rotation = rot;
+                    }
+                    else
+                    {
+                        // No existe todavía → instanciar como propio
+                        CrearObjetoPropioDesdeEstado(p);
+                    }
+
+                    // Actualizar ultimaPos/ultimaRot para que DronMove no spamee updates
+                    int idx = p.objId - ((miSlot == 1) ? 8 : 2);
+                    if (idx >= 0 && ultimaPos != null && idx < ultimaPos.Length)
+                    {
+                        ultimaPos[idx] = pos;
+                        ultimaRot[idx] = rot;
+                    }
+                }
+                else
+                {
+                    // Es remoto
+                    if (!objetosRemotos.TryGetValue(p.objId, out Transform tRemoto) || tRemoto == null)
+                    {
+                        CrearObjetoRemoto(p);
+                    }
+                    else
+                    {
+                        // Ya existe → teleportar directo (sin lerp)
+                        tRemoto.position = pos;
+                        tRemoto.rotation = rot;
+                        remoteTargetPos[p.objId] = pos;
+                        remoteTargetRot[p.objId] = rot;
+                    }
+                }
             }
         }
+    }
+
+    void CrearObjetoPropioDesdeEstado(PositionData p)
+    {
+        GameObject prefab = null;
+
+        if (p.tipo == "AEREO")
+            prefab = dronAereoPrefab;
+        else if (p.tipo == "NAVAL")
+            prefab = dronNavalPrefab;
+        else if (p.tipo == "PORTA")
+            prefab = (p.slot == 1) ? portaDronAereoPrefab : portaDronNavalPrefab;
+
+        if (prefab == null)
+        {
+            Debug.LogWarning($"CrearObjetoPropioDesdeEstado: prefab null para tipo={p.tipo}");
+            return;
+        }
+
+        Vector3 pos = new Vector3(p.x, p.y, p.z);
+        Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);
+
+        GameObject obj = Instantiate(prefab, pos, rot);
+
+        // Es mío → puede moverse y disparar
+        Mover m = obj.GetComponent<Mover>();
+        if (m != null) m.isMine = true;
+
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null) rb.isKinematic = false;
+
+        Disparo d = obj.GetComponent<Disparo>();
+        if (d != null)
+        {
+            d.isMine = true;
+            d.objIdDisparador = p.objId;
+        }
+
+        // Registrar en misObjetos
+        misObjetos[p.objId] = obj.transform;
+
+        // Si es portadron, marcar como enviado para que el sync arranque
+        if (p.tipo == "PORTA")
+        {
+            portaEnviada = true;
+            miPortaId = p.objId;
+        }
+
+        // Registrar en ultimaPos/ultimaRot
+        int idx = p.objId - ((miSlot == 1) ? 8 : 2);
+        if (idx >= 0)
+        {
+            if (ultimaPos == null || idx >= ultimaPos.Length)
+            {
+                int newSize = idx + 1;
+                Vector3[] newPos = new Vector3[newSize];
+                Quaternion[] newRot = new Quaternion[newSize];
+                if (ultimaPos != null)
+                    for (int i = 0; i < ultimaPos.Length; i++) { newPos[i] = ultimaPos[i]; newRot[i] = ultimaRot[i]; }
+                ultimaPos = newPos;
+                ultimaRot = newRot;
+            }
+            ultimaPos[idx] = pos;
+            ultimaRot[idx] = rot;
+        }
+
+        Debug.Log($"ObjetoPROPIO creado desde estado: tipo={p.tipo} objId={p.objId}");
     }
 
     //crear objeto remoto

@@ -5,7 +5,7 @@ public class Mover : MonoBehaviour
     [Header("Movimiento")]
     public float velocidadMovimiento = 10f;
     public float velocidadVertical = 6f;
-    public float sensibilidadMouse = 120f;
+    public float sensibilidadMouse = 300f;
     public float suavizadoMovimiento = 8f;
 
     public bool estaSeleccionado = false;

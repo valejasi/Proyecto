@@ -25,14 +25,14 @@ public class PortaDronAereo : PortaDronBase
     {
         Vector3 pos = transform.position;
 
-        if (pos.x < 0) 
-            pos.x = 0;
-        if (pos.x > 10) 
-            pos.x = 10;
-        if (pos.z > 5) 
-            pos.z = 5;
-        if (pos.z < -5) 
-            pos.z = -5;
+        if (pos.x < minX) 
+            pos.x = minX;
+        if (pos.x > maxX) 
+            pos.x = maxX;
+        if (pos.z > maxZ) 
+            pos.z = maxZ;
+        if (pos.z < minZ) 
+            pos.z = minZ;
 
         transform.position = pos;
     }
@@ -41,9 +41,9 @@ public class PortaDronAereo : PortaDronBase
     {
         Vector3 pos = transform.position;
 
-        return pos.x >= 0 &&
-            pos.x <= 10 &&
-            pos.z <= 5 &&
-            pos.z >= -5;
+        return pos.x >= minX &&
+            pos.x <= maxX &&
+            pos.z <= maxZ &&
+            pos.z >= minZ;
     }
 }

@@ -10,6 +10,10 @@ public abstract class PortaDronBase : MonoBehaviour
 
     protected int vidaActual;
     protected int dronesDesplegados;
+    public float minX;
+    public float maxX;
+    public float minZ;
+    public float maxZ;
 
     public Servidor servidor;
 

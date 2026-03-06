@@ -36,7 +36,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8185303686690545047}
@@ -239,7 +239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 613384675fe4dd04aa90ed861cbd66fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Disparo
-  balaPrefab: {fileID: 1148929857187239695, guid: 195bdd5f8bc11104981d49f5719a299b, type: 3}
+  balaPrefab: {fileID: 1148929857187239695, guid: c5cdaccf32b01f047ab953b4411e2694, type: 3}
   firePoint: {fileID: 2856287595553683205}
   fuerza: 20
   isMine: 0

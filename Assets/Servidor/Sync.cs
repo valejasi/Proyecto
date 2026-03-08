@@ -217,7 +217,7 @@ public partial class Servidor
         }
     }
 
-    IEnumerator Recargar(int objIdDisparador)
+    public IEnumerator Recargar(int objIdDisparador)
     {
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId)) yield break;
         if (!portaEnviada) yield break;

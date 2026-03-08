@@ -9,8 +9,13 @@ public class Disparo : MonoBehaviour
     public bool isMine = false;
     public int objIdDisparador;
 
+    [Header("Recarga automática")]
+    public float distanciaRecarga = 5f;
+    public float intervaloChequeoRecarga = 1f;
+
     private Municion municion;
     private Mover mover;
+    private float timerRecarga = 0f;
 
     void Start()
     {
@@ -20,7 +25,11 @@ public class Disparo : MonoBehaviour
 
     void Update()
     {
-        if (!isMine || mover == null || !mover.estaSeleccionado) return;
+        if (!isMine) return;
+
+        ChequearRecargaPorProximidad();
+
+        if (mover == null || !mover.estaSeleccionado) return;
         if (municion != null && !municion.TieneMunicion()) return;
 
         if (Input.GetKeyDown(KeyCode.Space))
@@ -31,6 +40,28 @@ public class Disparo : MonoBehaviour
             Servidor srv = FindAnyObjectByType<Servidor>();
             if (srv != null)
                 srv.StartCoroutine(srv.DispararDesdeServidor(objIdDisparador, firePoint.position, firePoint.forward, fuerza));
+        }
+    }
+
+    void ChequearRecargaPorProximidad()
+    {
+        timerRecarga -= Time.deltaTime;
+        if (timerRecarga > 0f) return;
+        timerRecarga = intervaloChequeoRecarga;
+
+        if (municion == null || municion.municionActual >= municion.municionMaxima) return;
+
+        Servidor srv = FindAnyObjectByType<Servidor>();
+        if (srv == null) return;
+
+        Transform miPorta = srv.GetMiPorta();
+        if (miPorta == null) return;
+
+        float dist = Vector3.Distance(transform.position, miPorta.position);
+        if (dist <= distanciaRecarga)
+        {
+            srv.StartCoroutine(srv.Recargar(objIdDisparador));
+            municion.RecargarCompleto(); // feedback visual inmediato
         }
     }
 

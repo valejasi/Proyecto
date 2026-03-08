@@ -109,4 +109,11 @@ public partial class Servidor
         public string sessionId;
         public int objIdDisparador;
     }
+
+    public Transform GetMiPorta()
+    {
+        int miPortaObjId = (miSlot == 1) ? 0 : 1;
+        misObjetos.TryGetValue(miPortaObjId, out Transform porta);
+        return porta;
+    }
 }

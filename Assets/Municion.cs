@@ -8,7 +8,7 @@ public class Municion : MonoBehaviour
     public int municionActual = 5;
 
     [Header("UI (opcional)")]
-    public TMP_Text textoMunicion;
+    public TextMeshProUGUI textoMunicion;
 
     void Start()
     {
@@ -34,11 +34,12 @@ public class Municion : MonoBehaviour
         ActualizarUI();
     }
 
-    private void ActualizarUI()
+    public  void ActualizarUI()
     {
         if (textoMunicion != null)
         {
             textoMunicion.text = $"Munición: {municionActual} / {municionMaxima}";
+
         }
     }
 }

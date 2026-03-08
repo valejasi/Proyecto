@@ -1,10 +1,22 @@
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
 
 public class Seleccionador : MonoBehaviour
 {
     private GameObject objetoSeleccionado;
     public CamaraJugador camaraJugador;
     private Color colorOriginal;
+
+    [Header("UI")]
+    public Slider uiSlider;
+    public TextMeshProUGUI uiTextoMunicion;
+
+    void Start()
+    {
+        if (uiTextoMunicion != null) uiTextoMunicion.gameObject.SetActive(false);
+        if (uiSlider != null) uiSlider.gameObject.SetActive(false);
+    }
 
     void Update()
     {
@@ -46,6 +58,19 @@ public class Seleccionador : MonoBehaviour
                 {
                     camaraJugador.objetivo = dron.transform;
                     camaraJugador.ActivarVistaDron(dron.EsAereo);
+                     // UI: conectar al dron seleccionado
+                    Municion municion = dron.GetComponent<Municion>();
+                    Combustible combustible = dron.GetComponent<Combustible>();
+
+                    if (municion != null) {
+                        uiTextoMunicion.gameObject.SetActive(true);
+                        municion.textoMunicion = uiTextoMunicion;
+                        municion.ActualizarUI();
+                    } 
+                    if (combustible != null){
+                        uiSlider.gameObject.SetActive(true);
+                        combustible.barraCombustible = uiSlider;
+                    }
                     Debug.Log("Es un dron, cambiando cámara");
                 }
 

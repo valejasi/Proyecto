@@ -335,7 +335,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f140f09ec440fb488a1ee2c7e9ec640, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Mover
-  velocidadMovimiento: 10
+  velocidadMovimiento: 20
   velocidadVertical: 5
   sensibilidadMouse: 120
   suavizadoMovimiento: 8
@@ -355,8 +355,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Combustible
   combustibleMaximo: 100
   combustibleActual: 100
-  consumoPorMetro: 5
-  demoraParaRecargar: 2
+  consumoPorMetro: 1
+  demoraParaRecargar: 1
   recargaPorSegundo: 20
   barraCombustible: {fileID: 0}
 --- !u!54 &3244526796154676107
@@ -425,6 +425,8 @@ MonoBehaviour:
   fuerza: 20
   isMine: 1
   objIdDisparador: 0
+  distanciaRecarga: 5
+  intervaloChequeoRecarga: 1
 --- !u!114 &5767721882879871188
 MonoBehaviour:
   m_ObjectHideFlags: 0

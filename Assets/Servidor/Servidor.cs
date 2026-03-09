@@ -146,6 +146,9 @@ public partial class Servidor : MonoBehaviour
             if (remoteTargetRot.TryGetValue(objId, out Quaternion tr))
                 t.rotation = Quaternion.Slerp(t.rotation, tr, 1f - Mathf.Exp(-smoothRot * Time.deltaTime));
         }
+         // Visibilidad enemigos 
+        if (camaraJugador != null && !camaraJugador.vistaMapaActiva && camaraJugador.objetivo != null)
+            ActualizarVisibilidadEnemigos(camaraJugador.objetivo);
     }
 
     // ==========================

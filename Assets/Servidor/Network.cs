@@ -154,24 +154,26 @@ public partial class Servidor
             if (req.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError("Error Load: " + req.error);
-                cargandoPartida = false; //reseteo el flag para poder hacer join normal
+                cargandoPartida = false;
                 yield break;
             }
             
             string json = req.downloadHandler.text;
             JoinResponse resp = JsonUtility.FromJson<JoinResponse>(json);
 
-            codigoSala = resp.codigo;   // confirmar código desde respuesta
+            codigoSala = resp.codigo;
             miSessionId = resp.sessionId;
             miPortaId = resp.portaId;
             portaEnviada = true;
-            SetSlot(1); // quien llama loadAndCreate es siempre aéreo
+            SetSlot(1);
 
             Debug.Log("Sala recreada como HOST (aéreo): " + codigoSala);
         }
 
-        // 🔥 después del load traemos estado
         yield return StartCoroutine(GetStateCompletoYReconstruir());
+        
+        // Después de reconstruir, el sync ya sabe qué objetos hay
+        Debug.Log($"Reconstrucción completa. MisObjetos: {misObjetos.Count} Remotos: {objetosRemotos.Count}");
     }
 
     IEnumerator GetStateCompletoYReconstruir()
@@ -229,6 +231,12 @@ public partial class Servidor
                     {
                         // No existe todavía → instanciar como propio
                         CrearObjetoPropioDesdeEstado(p);
+                    }
+
+                    if (p.tipo == "PORTA")
+                    {
+                        portaEnviada = true;
+                        miPortaId = p.objId;
                     }
 
                     // Actualizar ultimaPos/ultimaRot para que DronMove no spamee updates

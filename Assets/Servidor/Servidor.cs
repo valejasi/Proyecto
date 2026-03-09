@@ -75,6 +75,9 @@ public partial class Servidor : MonoBehaviour
     protected Vector3[] ultimaPos;
     protected Quaternion[] ultimaRot;
 
+    //flag para diferenciar los joins a la partida guardada
+    private bool cargandoPartida = false; 
+
     // ==========================
     // UNITY LIFECYCLE
     // ==========================
@@ -102,8 +105,9 @@ public partial class Servidor : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
             StartCoroutine(CreateAndStore());
 
-        // Join: escribir código + Enter
-        CapturarCodigoJoin();
+        // Join: escribir código + Enter, entra a una partida ya creada
+        if (!cargandoPartida)
+            CapturarCodigoJoin();
 
         // Colocar PORTA
         if (Input.GetKeyDown(KeyCode.V))
@@ -115,12 +119,16 @@ public partial class Servidor : MonoBehaviour
         }
 
         //GUARDAR Y LEVANTAR PARTIDA
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        Debug.Log($"Alpha1 presionado - codigoSala={codigoSala} miSlot={miSlot} porta1={porta1}");
+    
         if (Input.GetKeyDown(KeyCode.Alpha1)) {
             GuardarPartida();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
+            cargandoPartida = true; // bloquear join normal
             codigoSala = codigoIngresado.Trim().ToLower();
             StartCoroutine(CargarYReconstruir());
         }

@@ -98,7 +98,15 @@ public partial class Servidor
                     d.objIdDisparador = resp.dronesIds[i];
                 }
             }
+            bool tieneEstadoGuardado = resp.dronesIds != null && 
+                System.Array.Exists(resp.dronesIds, id => id != -1);
+
+            if (tieneEstadoGuardado)
+                yield return StartCoroutine(GetStateCompletoYReconstruir());
+
+                    IniciarSyncAutomatico();
         }
+
         IniciarSyncAutomatico();
     }
 
@@ -110,6 +118,14 @@ public partial class Servidor
     IEnumerator GuardarCoroutine()
     {
         string url = baseUrl + "/game/save/" + codigoSala;
+
+        Debug.Log($"GuardarCoroutine iniciado - codigoSala='{codigoSala}'");
+        if (string.IsNullOrWhiteSpace(codigoSala))
+        {
+            Debug.LogError("codigoSala está vacío, no se puede guardar");
+            yield break;
+        }
+
         Debug.Log("Codigo sala: " + codigoSala);
         Debug.Log("URL FINAL: " + url);
         UnityWebRequest request = UnityWebRequest.PostWwwForm(url, "");
@@ -117,7 +133,7 @@ public partial class Servidor
         if (request.result == UnityWebRequest.Result.Success)
             Debug.Log("Guardado OK");
         else
-            Debug.LogError(request.error);
+            Debug.LogError("Error: " + request.error + " | Body: " + request.downloadHandler.text);
     }
 
      public void CargarPartida()
@@ -136,6 +152,7 @@ public partial class Servidor
             if (req.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError("Error Load: " + req.error);
+                cargandoPartida = false; //reseteo el flag para poder hacer join normal
                 yield break;
             }
             
@@ -192,17 +209,10 @@ public partial class Servidor
 
             foreach (PositionData p in st.posiciones)
             {
-                // Ignorar objetos muertos
-                if (muertos.Contains(p.objId))
-                    continue;
-
-                // ... resto del foreach que ya tenés
-            }
-
-            foreach (PositionData p in st.posiciones)
-            {
                 Vector3 pos = new Vector3(p.x, p.y, p.z);
                 Quaternion rot = new Quaternion(p.qx, p.qy, p.qz, p.qw);
+
+                if (muertos.Contains(p.objId)) continue;
 
                 if (p.sessionId == miSessionId)
                 {
@@ -225,6 +235,12 @@ public partial class Servidor
                     {
                         ultimaPos[idx] = pos;
                         ultimaRot[idx] = rot;
+                    }
+
+                    if (p.sessionId == miSessionId && p.tipo == "PORTA")
+                    {
+                        portaEnviada = true;
+                        miPortaId = p.objId;
                     }
                 }
                 else

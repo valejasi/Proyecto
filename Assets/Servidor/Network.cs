@@ -49,6 +49,7 @@ public partial class Servidor
                 }
             }
             IniciarSyncAutomatico();
+            OcultarTodosEnemigos();
         }
     }
 
@@ -100,6 +101,7 @@ public partial class Servidor
             }
         }
         IniciarSyncAutomatico();
+        OcultarTodosEnemigos();
     }
 
     //GUARDAR Y LEVANTAR PARTIDA
@@ -342,6 +344,9 @@ public partial class Servidor
 
         GameObject obj = Instantiate(prefab, pos, rot);
 
+        foreach (var r in obj.GetComponentsInChildren<Renderer>())
+             r.enabled = false;
+
         // make sure remote drone is not controllable
         Mover m = obj.GetComponent<Mover>();
         if (m != null) m.isMine = false;
@@ -352,5 +357,40 @@ public partial class Servidor
         objetosRemotos[p.objId] = obj.transform;
         remoteTargetPos[p.objId] = pos;
         remoteTargetRot[p.objId] = rot;
+    }
+
+    // radio en unidades de mundo = porcentajeVision del dron activo * escala
+    public float escalaVision = 30f; 
+
+    public void OcultarTodosEnemigos()
+    {
+        foreach (var kv in objetosRemotos)
+        {
+            if (kv.Value == null) continue;
+            SetVisible(kv.Value, false);
+        }
+    }
+
+    public void ActualizarVisibilidadEnemigos(Transform dronActivo)
+    {
+        if (dronActivo == null) return;
+
+        // obtener porcentajeVision del dron seleccionado
+        DronBase dron = dronActivo.GetComponent<DronBase>();
+        float vision = (dron != null) ? dron.porcentajeVision * escalaVision : escalaVision;
+
+        foreach (var kv in objetosRemotos)
+        {
+            if (kv.Value == null) continue;
+            float dist = Vector3.Distance(dronActivo.position, kv.Value.position);
+            SetVisible(kv.Value, dist <= vision);
+        }
+    }
+
+    private void SetVisible(Transform t, bool visible)
+    {
+        // activa/desactiva todos los renderers del objeto y sus hijos
+        foreach (var r in t.GetComponentsInChildren<Renderer>())
+            r.enabled = visible;
     }
 }

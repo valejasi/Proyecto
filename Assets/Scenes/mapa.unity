@@ -1415,9 +1415,9 @@ RectTransform:
   - {fileID: 598531540}
   m_Father: {fileID: 28265323}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -1200, y: -710}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 100, y: 75}
   m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &222871125
@@ -1864,6 +1864,7 @@ MonoBehaviour:
   rotMapaLocal: {x: 90, y: 0, z: 0}
   suavidadPos: 12
   suavidadRot: 12
+  vistaMapaActiva: 1
 --- !u!4 &318052335
 Transform:
   m_ObjectHideFlags: 0
@@ -5933,10 +5934,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 28265323}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 100, y: 145}
+  m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &1623701982
 CanvasRenderer:
@@ -5993,8 +5994,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 60
-  m_fontSizeBase: 60
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -7100,6 +7101,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Seleccionador
   camaraJugador: {fileID: 318052334}
+  uiSlider: {fileID: 210527674}
+  uiTextoMunicion: {fileID: 1623701983}
 --- !u!4 &1929398848
 Transform:
   m_ObjectHideFlags: 0
@@ -7398,6 +7401,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e8268a5f6faf74ca308695fc05c818, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Servidor
+  escalaVision: 30
   camaraJugador: {fileID: 318052334}
   baseUrl: https://proyecto-y1ud.onrender.com
   porta1: {fileID: 1137164711}

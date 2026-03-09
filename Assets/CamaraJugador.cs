@@ -31,7 +31,15 @@ public class CamaraJugador : MonoBehaviour
     public float suavidadPos = 12f;
     public float suavidadRot = 12f;
 
-    private bool vistaMapaActiva = true;
+    public bool vistaMapaActiva = true;
+
+        // referencia al servidor para controlar visibilidad
+    private Servidor servidor;
+
+    void Start()
+    {
+        servidor = FindAnyObjectByType<Servidor>();
+    }
 
     void LateUpdate()
     {
@@ -76,12 +84,18 @@ public class CamaraJugador : MonoBehaviour
     {
         esAereo = aereo;
         vistaMapaActiva = false;
+         // avisar al servidor qué dron es el activo ahora
+        if (servidor != null)
+            servidor.ActualizarVisibilidadEnemigos(objetivo);
         Debug.Log($"Vista dron activada – {(aereo ? "aéreo" : "naval")}");
     }
 
     public void VolverAMapa()
     {
         vistaMapaActiva = true;
+         // ocultar todo lo remoto
+        if (servidor != null)
+            servidor.OcultarTodosEnemigos();
         Debug.Log("Volviendo a vista mapa");
     }
 }

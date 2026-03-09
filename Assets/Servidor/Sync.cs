@@ -124,8 +124,6 @@ public partial class Servidor
             int idx = objId - ((miSlot == 1) ? 8 : 2);
             if (idx < 0) continue;
 
-            Debug.Log($"SendBatch checking objId={objId} idx={idx} DronMove={DronMove(idx, t)}");
-
             if (!DronMove(idx, t)) continue;
 
             // grow arrays if needed

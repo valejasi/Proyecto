@@ -128,6 +128,7 @@ public partial class Servidor : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Comma))
         {
+             Debug.Log("Alpha2 presionado - codigoIngresado='" + codigoIngresado + "'");
             cargandoPartida = true; // bloquear join normal
             codigoSala = codigoIngresado.Trim().ToLower();
             StartCoroutine(CargarYReconstruir());

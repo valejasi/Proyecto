@@ -170,6 +170,14 @@ public partial class Servidor
             Debug.Log("Sala recreada como HOST (aéreo): " + codigoSala);
         }
 
+        foreach (var kv in new Dictionary<int, Transform>(misObjetos))
+        {
+            if (kv.Key >= 8) // son drones, no porta
+            {
+                misObjetos.Remove(kv.Key);
+            }
+        }
+
         yield return StartCoroutine(GetStateCompletoYReconstruir());
         
         // Después de reconstruir, el sync ya sabe qué objetos hay

@@ -119,14 +119,14 @@ public partial class Servidor : MonoBehaviour
         }
 
         //GUARDAR Y LEVANTAR PARTIDA
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Period))
         Debug.Log($"Alpha1 presionado - codigoSala={codigoSala} miSlot={miSlot} porta1={porta1}");
     
-        if (Input.GetKeyDown(KeyCode.Alpha1)) {
+        if (Input.GetKeyDown(KeyCode.Period)) {
             GuardarPartida();
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha2))
+        if (Input.GetKeyDown(KeyCode.Comma))
         {
             cargandoPartida = true; // bloquear join normal
             codigoSala = codigoIngresado.Trim().ToLower();

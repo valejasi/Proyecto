@@ -35,31 +35,37 @@ public class PantallaResultado : MonoBehaviour
                 {
                     textoCuenta.gameObject.SetActive(true);
                     if (int.Parse(miSlot) == resultado.slotSinPorta)
-                        textoCuenta.text = "⚠️ Tu portadron fue destruido! " + resultado.segundosRestantes + "s";
+                        textoCuenta.text = "Tu portadron fue destruido! " + resultado.segundosRestantes + "s";
                     else
-                        textoCuenta.text = "💀 Portadron enemigo destruido! " + resultado.segundosRestantes + "s";
+                        textoCuenta.text = "Portadron enemigo destruido! " + resultado.segundosRestantes + "s";
                 }
                 break;
 
             case "VICTORIA_HOST":
                 panelResultado.SetActive(true);
                 if (textoCuenta != null) textoCuenta.text = "";
-                if (textoResultado != null)
+                if (textoResultado != null){
                     textoResultado.text = (miSlot == "1") ? "¡VICTORIA!" : "DERROTA";
+                    textoResultado.color = (miSlot == "1") ? Color.green : Color.red;
+                }
                 break;
 
             case "VICTORIA_JOIN":
                 panelResultado.SetActive(true);
                 if (textoCuenta != null) textoCuenta.text = "";
-                if (textoResultado != null)
+                if (textoResultado != null){
                     textoResultado.text = (miSlot == "2") ? "¡VICTORIA!" : "DERROTA";
+                    textoResultado.color = (miSlot == "2") ? Color.green : Color.red;
+                }
                 break;
 
             case "EMPATE":
                 panelResultado.SetActive(true);
                 if (textoCuenta != null) textoCuenta.text = "";
-                if (textoResultado != null)
+                if (textoResultado != null){
                     textoResultado.text = "EMPATE";
+                    textoResultado.color = Color.yellow;
+                }
                 break;
         }
     }

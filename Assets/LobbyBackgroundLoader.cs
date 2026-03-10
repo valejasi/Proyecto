@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class LobbyBackgroundLoader : MonoBehaviour
 {
-    [SerializeField] private string mapSceneName = "MapScene"; // nombre exacto de tu escena
+    [SerializeField] private string mapSceneName = "mapa"; // nombre exacto de tu escena
 
     void Start()
     {

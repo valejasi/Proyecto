@@ -29,12 +29,11 @@ public class Seleccionador : MonoBehaviour
             {
                 GameObject clickeado = hit.collider.gameObject;
 
-                // Si tiene Mover pero no es mío, es del enemigo → ignorar completamente
                 Mover moverCheck = clickeado.GetComponent<Mover>();
                 if (moverCheck != null && !moverCheck.isMine)
                     return;
 
-                // Deseleccionar objeto anterior
+                // Deseleccionar anterior
                 if (objetoSeleccionado != null)
                 {
                     Renderer rPrev = objetoSeleccionado.GetComponent<Renderer>();
@@ -53,12 +52,13 @@ public class Seleccionador : MonoBehaviour
                 objetoSeleccionado = clickeado;
                 Debug.Log("Seleccioné: " + objetoSeleccionado.name);
 
+                // — Dron —
                 DronBase dron = hit.collider.GetComponentInParent<DronBase>();
                 if (dron != null && camaraJugador != null)
                 {
                     camaraJugador.objetivo = dron.transform;
                     camaraJugador.ActivarVistaDron(dron.EsAereo);
-                     // UI: conectar al dron seleccionado
+
                     Municion municion = dron.GetComponent<Municion>();
                     Combustible combustible = dron.GetComponent<Combustible>();
 
@@ -66,12 +66,20 @@ public class Seleccionador : MonoBehaviour
                         uiTextoMunicion.gameObject.SetActive(true);
                         municion.textoMunicion = uiTextoMunicion;
                         municion.ActualizarUI();
-                    } 
+                    }
                     if (combustible != null){
                         uiSlider.gameObject.SetActive(true);
                         combustible.barraCombustible = uiSlider;
                     }
                     Debug.Log("Es un dron, cambiando cámara");
+                }
+
+                // CAMBIO 2: — PortaDron —
+                PortaDronBase porta = objetoSeleccionado.GetComponent<PortaDronBase>();
+                if (porta != null && camaraJugador != null)
+                {
+                    camaraJugador.objetivo = porta.transform;
+                    camaraJugador.ActivarVistaPorta();
                 }
 
                 Renderer r = objetoSeleccionado.GetComponent<Renderer>();
@@ -85,13 +93,11 @@ public class Seleccionador : MonoBehaviour
                 if (mover != null)
                     mover.estaSeleccionado = true;
 
-                PortaDronBase porta = objetoSeleccionado.GetComponent<PortaDronBase>();
                 if (porta != null)
                     porta.estaSeleccionado = true;
             }
         }
 
-        // FIJAR CON V SOLO SI ES PORTADRON
         if (Input.GetKeyDown(KeyCode.V) && objetoSeleccionado != null)
         {
             PortaDronBase porta = objetoSeleccionado.GetComponent<PortaDronBase>();

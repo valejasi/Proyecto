@@ -20,7 +20,7 @@ public class CamaraJugador : MonoBehaviour
     public Vector3 offsetApuntarNaval = new Vector3(5f, 2f, 0f);
 
     [Header("Vista Apuntar - Aéreo")]
-    public Vector3 offsetApuntarAereo = new Vector3(7f, 4f, 0f);
+    public Vector3 offsetApuntarAereo = new Vector3(7f, 4f, 0f); 
 
     public Vector3 rotApuntarLocal = new Vector3(5f, -90f, 0f);
 
@@ -28,12 +28,16 @@ public class CamaraJugador : MonoBehaviour
     public Vector3 offsetMapa = new Vector3(0f, 150f, 0f);
     public Vector3 rotMapaLocal = new Vector3(90f, 0f, 0f);
 
+    [Header("Vista Porta")]
+    public Vector3 offsetPorta = new Vector3(0f, 20f, 0f); // vista desde arriba, más cerca que mapa
+    public Vector3 rotPortaLocal = new Vector3(90f, 0f, 0f);
+
     public float suavidadPos = 12f;
     public float suavidadRot = 12f;
 
     public bool vistaMapaActiva = true;
+    private bool vistaPortaActiva = false; // CAMBIO 2
 
-        // referencia al servidor para controlar visibilidad
     private Servidor servidor;
 
     void Start()
@@ -57,6 +61,11 @@ public class CamaraJugador : MonoBehaviour
         {
             posDeseada = objetivo.position + offsetMapa;
             rotDeseada = Quaternion.Euler(rotMapaLocal);
+        }
+        else if (vistaPortaActiva) // CAMBIO 2
+        {
+            posDeseada = objetivo.position + offsetPorta;
+            rotDeseada = Quaternion.Euler(rotPortaLocal);
         }
         else if (apuntando)
         {
@@ -84,16 +93,26 @@ public class CamaraJugador : MonoBehaviour
     {
         esAereo = aereo;
         vistaMapaActiva = false;
-         // avisar al servidor qué dron es el activo ahora
+        vistaPortaActiva = false;
         if (servidor != null)
             servidor.ActualizarVisibilidadEnemigos(objetivo);
         Debug.Log($"Vista dron activada – {(aereo ? "aéreo" : "naval")}");
     }
 
+    // nueva función para cuando se selecciona el portadron
+    public void ActivarVistaPorta()
+    {
+        vistaMapaActiva = false;
+        vistaPortaActiva = true;
+        if (servidor != null)
+            servidor.OcultarTodosEnemigos(); // desde el porta no se ven enemigos
+        Debug.Log("Vista porta activada");
+    }
+
     public void VolverAMapa()
     {
         vistaMapaActiva = true;
-         // ocultar todo lo remoto
+        vistaPortaActiva = false; 
         if (servidor != null)
             servidor.OcultarTodosEnemigos();
         Debug.Log("Volviendo a vista mapa");

@@ -119,23 +119,27 @@ public partial class Servidor
     }
     IEnumerator GuardarCoroutine()
     {
-        string url = baseUrl + "/game/save/" + codigoSala;
-
-        Debug.Log($"GuardarCoroutine iniciado - codigoSala='{codigoSala}'");
         if (string.IsNullOrWhiteSpace(codigoSala))
         {
             Debug.LogError("codigoSala está vacío, no se puede guardar");
             yield break;
         }
-
-        Debug.Log("Codigo sala: " + codigoSala);
+        
+        string url = baseUrl + "/game/save/" + codigoSala;
         Debug.Log("URL FINAL: " + url);
-        UnityWebRequest request = UnityWebRequest.PostWwwForm(url, "");
-        yield return request.SendWebRequest();
-        if (request.result == UnityWebRequest.Result.Success)
-            Debug.Log("Guardado OK");
-        else
-            Debug.LogError("Error: " + request.error + " | Body: " + request.downloadHandler.text);
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            request.uploadHandler = new UploadHandlerRaw(new byte[0]);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+                Debug.Log("Guardado OK: " + request.downloadHandler.text);
+            else
+                Debug.LogError("Error: " + request.error + " | Body: " + request.downloadHandler.text);
+        }
     }
 
      public void CargarPartida()

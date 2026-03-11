@@ -10,8 +10,8 @@ public partial class Servidor : MonoBehaviour
     [SerializeField] public string baseUrl = "https://proyecto-y1ud.onrender.com";
 
     [Header("PORTADRONES (arrastrar)")]
-    [SerializeField] private Transform porta1; // host (aéreo)
-    [SerializeField] private Transform porta2; // join (naval)
+    [SerializeField] public Transform porta1; // host (aéreo)
+    [SerializeField] public Transform porta2; // join (naval)
 
     [Header("DRONES P1 (AÉREO: 12)")]
     [SerializeField] private Transform[] dronesP1;

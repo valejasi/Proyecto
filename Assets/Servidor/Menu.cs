@@ -4,11 +4,17 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 using System.Collections;
 
-public class Menu : Servidor
+public class Menu : MonoBehaviour
 {
     public TMP_InputField ingresoCodigo;
     public TextMeshProUGUI textoError;
     private string codigo;
+    private Servidor srv;
+
+    void Awake()
+    {
+        srv = FindFirstObjectByType<Servidor>(FindObjectsInactive.Include);
+    }
 
     public void CrearPartida()
     {
@@ -17,8 +23,8 @@ public class Menu : Servidor
 
     IEnumerator CrearPartidaCR()
     {
-        yield return StartCoroutine(CreateAndStore());
-        if (!string.IsNullOrEmpty(codigoSala))
+        yield return StartCoroutine(srv.CreateAndStore());
+        if (!string.IsNullOrEmpty(srv.codigoSala))
         {
             SceneManager.LoadScene("SalaEspera");
         }
@@ -35,8 +41,8 @@ public class Menu : Servidor
     {
         //codigoSala = string.Empty;
         codigo = ingresoCodigo.text.Trim().ToLower();
-        yield return StartCoroutine(JoinAndStore(codigo));
-        if (string.IsNullOrEmpty(codigoSala))
+        yield return StartCoroutine(srv.JoinAndStore(codigo));
+        if (string.IsNullOrEmpty(srv.codigoSala))
             StartCoroutine(BuscarPartida());
         else
         {
@@ -46,7 +52,7 @@ public class Menu : Servidor
 
     IEnumerator BuscarPartida()
     {
-        string url = baseUrl + "/game/load/" + codigo;
+        string url = srv.baseUrl + "/game/load/" + codigo;
         using (UnityWebRequest req = UnityWebRequest.Get(url))
         {
             yield return req.SendWebRequest();
@@ -54,7 +60,7 @@ public class Menu : Servidor
             if (req.result != UnityWebRequest.Result.Success || req.downloadHandler.text == "Sala no existe.")
             {
                 textoError.text = "No se pudo unir: sala no existe o código incorrecto.";
-                codigoSala = string.Empty;
+                srv.codigoSala = string.Empty;
                 yield break;
             }
             else

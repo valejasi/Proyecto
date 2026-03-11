@@ -964,26 +964,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0889b540b2c8b984eae672e54e463bf3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Menu
-  camaraJugador: {fileID: 0}
-  baseUrl: https://proyecto-y1ud.onrender.com
-  porta1: {fileID: 164603237}
-  porta2: {fileID: 164603237}
-  dronesP1: []
-  dronesP2: []
-  intervalo: 0.1
-  smoothPos: 12
-  smoothRot: 12
-  dronAereoPrefab: {fileID: 0}
-  dronNavalPrefab: {fileID: 0}
-  portaDronAereoPrefab: {fileID: 0}
-  portaDronNavalPrefab: {fileID: 0}
-  balaPrefabRemoto: {fileID: 0}
-  codigoSala: 
-  miSessionId: 
-  codigoIngresado: 
-  miSlot: 0
-  minPos: 0.01
-  minRot: 0.5
   ingresoCodigo: {fileID: 447798841}
   textoError: {fileID: 2073265251}
 --- !u!1 &1023273947
@@ -1061,6 +1041,71 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1023273947}
   m_CullTransparentMesh: 1
+--- !u!1 &1461029890
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1461029892}
+  - component: {fileID: 1461029891}
+  m_Layer: 0
+  m_Name: NetManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1461029891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461029890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8e8268a5f6faf74ca308695fc05c818, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Servidor
+  escalaVision: 30
+  camaraJugador: {fileID: 0}
+  baseUrl: https://proyecto-y1ud.onrender.com
+  porta1: {fileID: 164603237}
+  porta2: {fileID: 164603237}
+  dronesP1: []
+  dronesP2: []
+  intervalo: 0.1
+  smoothPos: 12
+  smoothRot: 12
+  dronAereoPrefab: {fileID: 2176188128740564376, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
+  dronNavalPrefab: {fileID: 6645096671164301066, guid: ae4571286b42ed54ba0c8d6a0c2453eb, type: 3}
+  portaDronAereoPrefab: {fileID: 3191160084376428186, guid: bb0be04510dd00e4db5f580b06b1fc01, type: 3}
+  portaDronNavalPrefab: {fileID: 5458765581660240465, guid: cd83c9eef26f88a4d8f41bd454313620, type: 3}
+  balaPrefabRemoto: {fileID: 0}
+  codigoSala: 
+  miSessionId: 
+  codigoIngresado: 
+  miSlot: 0
+  minPos: 0.01
+  minRot: 0.5
+--- !u!4 &1461029892
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461029890}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1280, y: -0.00001, z: 7290.161}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1549928590
 GameObject:
   m_ObjectHideFlags: 0
@@ -1952,3 +1997,4 @@ SceneRoots:
   - {fileID: 883294554}
   - {fileID: 992773262}
   - {fileID: 164603237}
+  - {fileID: 1461029892}

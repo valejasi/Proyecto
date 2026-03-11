@@ -105,7 +105,7 @@ GameObject:
   - component: {fileID: 499873481987742630}
   m_Layer: 0
   m_Name: PortaDronAereo
-  m_TagString: Untagged
+  m_TagString: PortaAereo
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -223,6 +223,11 @@ MonoBehaviour:
   dronesMaximos: 12
   estaSeleccionado: 0
   prefabDron: {fileID: 2176188128740564376, guid: 3d66e975f65a8ad4a8e8f68cd13877e8, type: 3}
+  minX: 0
+  maxX: 0
+  minZ: 0
+  maxZ: 0
+  servidor: {fileID: 0}
   anchoMapa: 60
 --- !u!1 &5014089125616435932
 GameObject:

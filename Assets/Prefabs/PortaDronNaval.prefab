@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 8489156058771384897}
   m_Layer: 0
   m_Name: PortaDronNaval
-  m_TagString: Untagged
+  m_TagString: PortaNaval
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -132,4 +132,9 @@ MonoBehaviour:
   dronesMaximos: 0
   estaSeleccionado: 0
   prefabDron: {fileID: 6645096671164301066, guid: ae4571286b42ed54ba0c8d6a0c2453eb, type: 3}
+  minX: 0
+  maxX: 0
+  minZ: 0
+  maxZ: 0
+  servidor: {fileID: 0}
   anchoMapa: 60

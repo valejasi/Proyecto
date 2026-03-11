@@ -23,7 +23,7 @@ public partial class Servidor
         
     }
 
-    [SerializeField] private CamaraJugador camaraJugador;  
+    [SerializeField] public CamaraJugador camaraJugador;  
 
     void SetSlot(int slot)
     {

@@ -16,12 +16,12 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI textoJugador1;
     [SerializeField] private TextMeshProUGUI textoJugador2;
     [SerializeField] private TextMeshProUGUI textoEstado;
-    [SerializeField] private Button          btnIniciar;
+    //[SerializeField] private Button          btnIniciar;
     [SerializeField] private TextMeshProUGUI textoBtnIniciar;
 
     private Servidor srv;
     private bool clienteListo = false;
-    private bool iniciando    = false;
+    //private bool iniciando    = false;
 
     private readonly Color colorAereo = new Color(1.00f, 0.25f, 0.25f);  // rojo brillante
     private readonly Color colorNaval = new Color(0.25f, 0.60f, 1.00f);  // azul brillante
@@ -32,8 +32,8 @@ public class LobbyManager : MonoBehaviour
     {
         srv = FindFirstObjectByType<Servidor>(FindObjectsInactive.Include);
 
-        btnIniciar.interactable = false;
-        btnIniciar.onClick.AddListener(OnIniciarClick);
+        //btnIniciar.interactable = false;
+        //btnIniciar.onClick.AddListener(OnIniciarClick);
         if (textoBtnIniciar != null) textoBtnIniciar.text = "Esperando jugadores...";
 
         if (srv == null)
@@ -90,15 +90,11 @@ public class LobbyManager : MonoBehaviour
                 
                 if (state?.vidas == null) continue;
 
-
-
                 if (state.vidas.Length >= 2)
                 {
                     clienteListo = true;
                     SetSlotUI(textoJugador2, "Equipo Naval", "Conectado", colorNaval);
-                    textoEstado.text        = "¡Sala completa! Podés iniciar la partida.";
-                    btnIniciar.interactable = true;
-                    if (textoBtnIniciar != null) textoBtnIniciar.text = "¡INICIAR PARTIDA!";
+                    StartCoroutine(ContadorInicio());
                 }
             }
         }
@@ -123,31 +119,28 @@ public class LobbyManager : MonoBehaviour
                 Debug.Log("State recibido: " + req.downloadHandler.text);
                 if (state?.posiciones == null) continue;
 
-                if (state.vidas != null && state.vidas.Length >= 2 && iniciando)
+                if (state.vidas != null && state.vidas.Length >= 2)
                 {
-                    Debug.Log("Posiciones: " + state.posiciones.Length);
-                    Debug.Log("Host inició partida, entrando al juego");
-                    yield return new WaitForSeconds(3.0f);
-                    SceneManager.LoadScene(escenaJuego);
+                    StartCoroutine(ContadorInicio());
                     yield break;
                 }
             }
         }
     }
 
-    void OnIniciarClick()
+    /*void OnIniciarClick()
     {
         if (srv.miSlot != 1 || !clienteListo || iniciando) return;
         iniciando = true;
         btnIniciar.interactable = false;
         StartCoroutine(ContadorInicio());
-    }
+    }*/
 
     IEnumerator ContadorInicio()
     {
         for (int i = 3; i > 0; i--)
         {
-            textoEstado.text     = "Iniciando en " + i + "...";
+            textoEstado.text     = "¡Sala completa! Iniciando en " + i + "...";
             textoEstado.fontSize = 72;
             yield return new WaitForSeconds(0.3f);
             textoEstado.fontSize = 54;

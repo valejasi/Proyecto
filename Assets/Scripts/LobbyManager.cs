@@ -23,9 +23,9 @@ public class LobbyManager : MonoBehaviour
     private bool clienteListo = false;
     private bool iniciando    = false;
 
-    private readonly Color colorAereo = new Color(0.40f, 0.78f, 1.00f);
-    private readonly Color colorNaval = new Color(0.20f, 0.45f, 0.85f);
-    private readonly Color colorGris  = new Color(0.55f, 0.55f, 0.55f);
+    private readonly Color colorAereo = new Color(1.00f, 0.25f, 0.25f);  // rojo brillante
+    private readonly Color colorNaval = new Color(0.25f, 0.60f, 1.00f);  // azul brillante
+    private readonly Color colorGris  = new Color(0.90f, 0.90f, 0.90f);  // gris casi blanco
 
 
     void Start()
@@ -66,6 +66,10 @@ public class LobbyManager : MonoBehaviour
             clienteListo = true;
             StartCoroutine(EsperarInicioHost());
         }
+
+        textoEstado.color     = Color.white;
+        textoCodigoSala.color = Color.white;
+        textoBtnIniciar.color = Color.white;
     }
 
     // El host pollea cada 1.5s hasta que el Naval se une (vidas.Length >= 2)
@@ -119,10 +123,11 @@ public class LobbyManager : MonoBehaviour
                 Debug.Log("State recibido: " + req.downloadHandler.text);
                 if (state?.posiciones == null) continue;
 
-                if (state.vidas != null && state.vidas.Length >= 2)
+                if (state.vidas != null && state.vidas.Length >= 2 && iniciando)
                 {
                     Debug.Log("Posiciones: " + state.posiciones.Length);
                     Debug.Log("Host inició partida, entrando al juego");
+                    yield return new WaitForSeconds(3.0f);
                     SceneManager.LoadScene(escenaJuego);
                     yield break;
                 }

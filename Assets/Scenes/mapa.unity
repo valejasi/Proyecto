@@ -727,9 +727,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Controles:\n\n\nW \u2192 Mover el dron hacia adelante  \n\r\nS \u2192
-    Mover el dron hacia atr\xE1s   \n\r\nA \u2192 Rotar el dron hacia la izquierda\n\r\nD
-    \u2192 Rotar el dron hacia la derecha  \r\n"
+  m_text: "Controles:\n\nW \u2192 Mover el dron hacia adelante  \n\r\nS \u2192 Mover
+    el dron hacia atr\xE1s   \n\r\nA \u2192 Rotar el dron hacia la izquierda\n\r\nD
+    \u2192 Rotar el dron hacia la derecha  \n\nF  \u2192 Bajar el dron \n\nR \u2192
+    Subir el dron"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -9481,9 +9482,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\n\n\n\nBarra espaciadora \u2192 Disparar\n\r\nM \u2192 Cambiar a la vista
-    del mapa\n\r\nClick izquierdo \u2192 Seleccionar drones\n \r\nClick derecho \u2192
-    Apuntar \r\n\r\n"
+  m_text: "\n\n\n\nBarra espaciadora \u2192 Disparar\n\nV \u2192 Fijar el portadron\n\r\nM
+    \u2192 Cambiar a la vista del mapa\n\r\nClick izquierdo \u2192 Seleccionar drones\n
+    \r\nClick derecho \u2192 Apuntar \n\n\n\r\n\r\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

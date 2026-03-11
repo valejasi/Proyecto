@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 using System.Collections;
+using Unity.VisualScripting;
 
 public class Menu : MonoBehaviour
 {
@@ -10,10 +11,18 @@ public class Menu : MonoBehaviour
     public TextMeshProUGUI textoError;
     private string codigo;
     private Servidor srv;
+    public GameObject SalaEspera;
+    public GameObject lobbyManager;
+    public GameObject MenuUI;
+    public GameObject PanelInicio;
+    public GameObject PanelControles;
 
     void Awake()
     {
+        lobbyManager.SetActive(false);
         srv = FindFirstObjectByType<Servidor>(FindObjectsInactive.Include);
+        SalaEspera.SetActive(false);
+        PanelControles.SetActive(false);
     }
 
     public void CrearPartida()
@@ -26,7 +35,9 @@ public class Menu : MonoBehaviour
         yield return StartCoroutine(srv.CreateAndStore());
         if (!string.IsNullOrEmpty(srv.codigoSala))
         {
-            SceneManager.LoadScene("SalaEspera");
+            MenuUI.SetActive(false);
+            lobbyManager.SetActive(true);
+            SalaEspera.SetActive(true);
         }
         else
             textoError.text = "No se pudo crear la sala";
@@ -46,25 +57,37 @@ public class Menu : MonoBehaviour
             StartCoroutine(BuscarPartida());
         else
         {
-            SceneManager.LoadScene("SalaEspera");
+            MenuUI.SetActive(false);
+            lobbyManager.SetActive(true);
+            SalaEspera.SetActive(true);
         }
     }
 
     IEnumerator BuscarPartida()
     {
-        string url = srv.baseUrl + "/game/load/" + codigo;
-        using (UnityWebRequest req = UnityWebRequest.Get(url))
+        srv.CargarPartida();
+        if (string.IsNullOrEmpty(srv.codigoSala))
         {
-            yield return req.SendWebRequest();
-
-            if (req.result != UnityWebRequest.Result.Success || req.downloadHandler.text == "Sala no existe.")
-            {
-                textoError.text = "No se pudo unir: sala no existe o código incorrecto.";
-                srv.codigoSala = string.Empty;
-                yield break;
-            }
-            else
-                SceneManager.LoadScene("SalaEspera");
+            textoError.text = "No se pudo unir: sala no existe o código incorrecto.";
+            yield break;
         }
+        else
+        {
+            MenuUI.SetActive(false);
+            lobbyManager.SetActive(true);
+            SalaEspera.SetActive(true);
+        }
+    }
+
+    public void MostrarControles()
+    {
+        PanelControles.SetActive(true);
+        PanelInicio.SetActive(false);
+    }
+
+    public void CerrarControles()
+    {
+        PanelControles.SetActive(false);
+        PanelInicio.SetActive(true);
     }
 }

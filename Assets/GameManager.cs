@@ -4,7 +4,7 @@ public class GameManager : MonoBehaviour
 {
     public static bool juegoIniciado = false;
 
-    void Awake()
+    /*void Awake()
     {
         Servidor srv = FindFirstObjectByType<Servidor>(FindObjectsInactive.Include);
         GameObject porta1Aux = GameObject.FindGameObjectWithTag("PortaAereo");
@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
             srv.porta1 = porta1Aux.transform;
         if (porta2Aux != null)
             srv.porta2 = porta2Aux.transform;
-    }
+    }*/
 
     void Update()
     {

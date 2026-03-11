@@ -9,7 +9,7 @@ using UnityEngine.Networking;
 public class LobbyManager : MonoBehaviour
 {
     [Header("Config")]
-    [SerializeField] private string escenaJuego = "SampleScene";
+    //[SerializeField] private string escenaJuego = "SampleScene";
 
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI textoCodigoSala;
@@ -26,6 +26,7 @@ public class LobbyManager : MonoBehaviour
     private readonly Color colorAereo = new Color(1.00f, 0.25f, 0.25f);  // rojo brillante
     private readonly Color colorNaval = new Color(0.25f, 0.60f, 1.00f);  // azul brillante
     private readonly Color colorGris  = new Color(0.90f, 0.90f, 0.90f);  // gris casi blanco
+    public GameObject SalaEspera;
 
 
     void Start()
@@ -39,15 +40,14 @@ public class LobbyManager : MonoBehaviour
         if (srv == null)
         {
             Debug.LogWarning("Servidor no encontrado");
-            textoCodigoSala.text = "Código: ?";
+            textoCodigoSala.text = "Codigo: ?";
             SetSlotUI(textoJugador1, "Equipo Aereo", "Esperando...", colorGris);
             SetSlotUI(textoJugador2, "Equipo Naval", "Esperando...", colorGris);
             textoEstado.text = "Error: no se encontró el servidor.";
             return;
         }
 
-        textoCodigoSala.text = "Código: " + srv.codigoSala.ToUpper();
-
+        textoCodigoSala.text = "Codigo: " + srv.codigoSala.ToUpper();
 
         if (srv.miSlot == 1)
         {
@@ -148,7 +148,7 @@ public class LobbyManager : MonoBehaviour
         }
         textoEstado.text = "¡Comienza la partida!";
         yield return new WaitForSeconds(0.8f);
-        SceneManager.LoadScene(escenaJuego);
+        SalaEspera.SetActive(false);
     }
 
 

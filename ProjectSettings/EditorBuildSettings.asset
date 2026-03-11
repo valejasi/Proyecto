@@ -5,13 +5,13 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/MenuInicio.unity
     guid: 1dc7a61e3b19ddf41832845f860e907c
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SalaEspera.unity
     guid: cfe74015db3c41d4787b0af200799089
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1

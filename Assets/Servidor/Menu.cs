@@ -65,6 +65,7 @@ public class Menu : MonoBehaviour
 
     IEnumerator BuscarPartida()
     {
+        srv.codigoSala = codigo;
         srv.CargarPartida();
         if (string.IsNullOrEmpty(srv.codigoSala))
         {

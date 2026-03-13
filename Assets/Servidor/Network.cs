@@ -147,7 +147,7 @@ public partial class Servidor
         StartCoroutine(CargarYReconstruir());
     }
 
-    IEnumerator CargarYReconstruir()
+    public IEnumerator CargarYReconstruir()
     {
         string url = baseUrl + "/game/loadAndCreate/" + codigoSala;
 

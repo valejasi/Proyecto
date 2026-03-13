@@ -87,15 +87,19 @@ public class LobbyManager : MonoBehaviour
                 if (req.result != UnityWebRequest.Result.Success) continue;
 
                 Servidor.StateResponse state = JsonUtility.FromJson<Servidor.StateResponse>(req.downloadHandler.text);
+                if (state?.posiciones == null) continue;
                 
-                if (state?.vidas == null) continue;
-
-                if (state.vidas.Length >= 2)
-                {
-                    clienteListo = true;
-                    SetSlotUI(textoJugador2, "Equipo Naval", "Conectado", colorNaval);
-                    StartCoroutine(ContadorInicio());
-                }
+                if (state.posiciones != null)
+                    foreach (var p in state.posiciones)
+                    {
+                        if (p.slot == 2)
+                        {
+                            clienteListo = true;
+                            SetSlotUI(textoJugador2, "Equipo Naval", "Conectado", colorNaval);
+                            StartCoroutine(ContadorInicio());
+                            break;
+                        }
+                    }
             }
         }
     }

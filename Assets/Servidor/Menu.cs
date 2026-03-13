@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 using System.Collections;
 using Unity.VisualScripting;
+using System.Diagnostics;
 
 public class Menu : MonoBehaviour
 {
@@ -16,6 +17,10 @@ public class Menu : MonoBehaviour
     public GameObject MenuUI;
     public GameObject PanelInicio;
     public GameObject PanelControles;
+    private bool join;
+    private bool load;
+    private bool encontrado;
+
 
     void Awake()
     {
@@ -50,23 +55,34 @@ public class Menu : MonoBehaviour
 
     IEnumerator JoinPartidaCR()
     {
-        //codigoSala = string.Empty;
         codigo = ingresoCodigo.text.Trim().ToLower();
-        yield return StartCoroutine(srv.JoinAndStore(codigo));
-        if (string.IsNullOrEmpty(srv.codigoSala))
+        srv.codigoSala = codigo;
+        yield return StartCoroutine(CheckJoin());
+
+        if (join)
             StartCoroutine(BuscarPartida());
         else
         {
-            MenuUI.SetActive(false);
-            lobbyManager.SetActive(true);
-            SalaEspera.SetActive(true);
+            yield return StartCoroutine(srv.CargarYReconstruir());
+            yield return StartCoroutine(CheckLoad());
+            if (load)
+            {
+                MenuUI.SetActive(false);
+                lobbyManager.SetActive(true);
+                SalaEspera.SetActive(true);
+                textoError.text = "Entra 1";
+            }
+            else
+            {
+                textoError.text = "No se pudo unir: sala no existe o código incorrecto.";
+                yield break;
+            }
         }
     }
 
     IEnumerator BuscarPartida()
     {
-        srv.codigoSala = codigo;
-        yield return StartCoroutine(srv.CargarYReconstruir());
+        yield return StartCoroutine(srv.JoinAndStore(codigo));
         if (string.IsNullOrEmpty(srv.codigoSala))
         {
             textoError.text = "No se pudo unir: sala no existe o código incorrecto.";
@@ -77,6 +93,7 @@ public class Menu : MonoBehaviour
             MenuUI.SetActive(false);
             lobbyManager.SetActive(true);
             SalaEspera.SetActive(true);
+            textoError.text = "Entra 2";
         }
     }
 
@@ -90,5 +107,68 @@ public class Menu : MonoBehaviour
     {
         PanelControles.SetActive(false);
         PanelInicio.SetActive(true);
+    }
+
+    IEnumerator CheckJoin()
+    {
+        join = false;
+        string url = srv.baseUrl + "/game/state/" + codigo;
+
+        using (UnityWebRequest req = UnityWebRequest.Get(url))
+        {
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                yield break;
+
+            string json = req.downloadHandler.text;
+            
+            if (string.IsNullOrWhiteSpace(json) || json == "Sala no existe.") //Es un asco, pero sino da error parseando el json
+                yield break;
+
+            Servidor.StateResponse st = JsonUtility.FromJson<Servidor.StateResponse>(json);
+
+            if (st == null)
+                yield break;
+
+            if (st.posiciones.Length == 0 && st.vidas != null) //Unirse a partida nueva
+                join = true;
+
+            if (st.posiciones.Length != 0) //Unirse a partida cargada por otro jugador
+                foreach (var p in st.posiciones)
+                {
+                    if (p.slot == 1)
+                    {
+                        join = true;
+                        break;
+                    }
+                }
+        }
+    }
+
+    IEnumerator CheckLoad()
+    {
+        load = false;
+        string url = srv.baseUrl + "/game/state/" + codigo;
+
+        using (UnityWebRequest req = UnityWebRequest.Get(url))
+        {
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+                yield break;
+
+            string json = req.downloadHandler.text;
+            
+            if (string.IsNullOrWhiteSpace(json) || json == "Sala no existe.")
+                yield break;
+
+            Servidor.StateResponse st = JsonUtility.FromJson<Servidor.StateResponse>(json);
+
+            if (st == null || st.posiciones.Length == 0)
+                yield break;
+
+            load = true;
+        }
     }
 }

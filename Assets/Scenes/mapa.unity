@@ -7310,7 +7310,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 37.77776, y: -342.6667}
+  m_AnchoredPosition: {x: 37.77776, y: -386}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1326685420
@@ -9484,7 +9484,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\n\n\n\nBarra espaciadora \u2192 Disparar\n\nV \u2192 Fijar el portadron\n\r\nM
     \u2192 Cambiar a la vista del mapa\n\r\nClick izquierdo \u2192 Seleccionar drones\n
-    \r\nClick derecho \u2192 Apuntar \n\n\n\r\n\r\n"
+    \r\nClick derecho \u2192 Apuntar \n\n2 \u2192 Guardar partida \n\r\n\r\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

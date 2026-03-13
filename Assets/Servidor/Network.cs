@@ -188,7 +188,7 @@ public partial class Servidor
         Debug.Log($"Reconstrucción completa. MisObjetos: {misObjetos.Count} Remotos: {objetosRemotos.Count}");
     }
 
-    IEnumerator GetStateCompletoYReconstruir()
+    public IEnumerator GetStateCompletoYReconstruir()
     {
         if (string.IsNullOrWhiteSpace(codigoSala) || string.IsNullOrWhiteSpace(miSessionId))
             yield break;

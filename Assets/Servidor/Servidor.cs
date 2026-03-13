@@ -63,7 +63,7 @@ public partial class Servidor : MonoBehaviour
     protected readonly Dictionary<int, Quaternion> remoteTargetRot = new Dictionary<int, Quaternion>();
 
     // Cache transforms
-    protected readonly Dictionary<int, Transform> misObjetos = new Dictionary<int, Transform>();
+    public readonly Dictionary<int, Transform> misObjetos = new Dictionary<int, Transform>();
     protected readonly Dictionary<int, Transform> objetosRemotos = new Dictionary<int, Transform>();
 
 

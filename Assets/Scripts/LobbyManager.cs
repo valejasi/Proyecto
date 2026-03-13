@@ -4,7 +4,8 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine.Networking;
-
+using System.Buffers;
+using System.Collections.Generic;
 
 public class LobbyManager : MonoBehaviour
 {
@@ -109,7 +110,17 @@ public class LobbyManager : MonoBehaviour
 
                 if (dosJugadores)
                 {
+                    foreach (var kv in new Dictionary<int, Transform>(srv.misObjetos))
+        {
+                    if (kv.Key >= 8) // son drones, no porta
+                    {
+                        srv.misObjetos.Remove(kv.Key);
+                    }
+        }
+                    yield return StartCoroutine(srv.GetStateCompletoYReconstruir());
                     clienteListo = true;
+                    srv.IniciarSyncAutomatico();
+                    srv.OcultarTodosEnemigos();
                     SetSlotUI(textoJugador2, "Equipo Naval", "Conectado", colorNaval);
                     StartCoroutine(ContadorInicio());
                 }
@@ -159,6 +170,16 @@ public class LobbyManager : MonoBehaviour
 
                 if (dosJugadores)
                 {
+                    foreach (var kv in new Dictionary<int, Transform>(srv.misObjetos))
+        {
+                    if (kv.Key >= 8) // son drones, no porta
+                    {
+                        srv.misObjetos.Remove(kv.Key);
+                    }
+        }
+                    yield return StartCoroutine(srv.GetStateCompletoYReconstruir());
+                    srv.IniciarSyncAutomatico();
+                    srv.OcultarTodosEnemigos();
                     StartCoroutine(ContadorInicio());
                     yield break;
                 }

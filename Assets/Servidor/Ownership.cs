@@ -4,7 +4,7 @@ using UnityEngine;
 //configuraciones fisicas y de control
 public partial class Servidor
 {
-    void IniciarSyncAutomatico()
+    public void IniciarSyncAutomatico()
     {
         
         if (sendLoop == null)

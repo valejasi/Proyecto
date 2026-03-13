@@ -89,7 +89,13 @@ public class LobbyManager : MonoBehaviour
                 Servidor.StateResponse state = JsonUtility.FromJson<Servidor.StateResponse>(req.downloadHandler.text);
                 if (state?.posiciones == null) continue;
                 
-                if (state.posiciones != null)
+                if (state.posiciones.Length == 0)
+                {
+                    clienteListo = true;
+                    SetSlotUI(textoJugador2, "Equipo Naval", "Conectado", colorNaval);
+                    StartCoroutine(ContadorInicio());
+                }
+                else
                     foreach (var p in state.posiciones)
                     {
                         if (p.slot == 2)

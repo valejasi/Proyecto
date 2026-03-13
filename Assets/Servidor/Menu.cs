@@ -131,18 +131,26 @@ public class Menu : MonoBehaviour
             if (st == null)
                 yield break;
 
-            if (st.posiciones.Length == 0 && st.vidas != null) //Unirse a partida nueva
+            if (st.posiciones.Length == 0 && st.vidas != null)//Unirse a partida nueva
+            {
+                join = true;
+                yield break;
+            } 
+                
+             bool haySlot1 = false, haySlot2 = false;
+            foreach (var p in st.posiciones)
+            {
+                if (p.slot == 1) haySlot1 = true;
+                if (p.slot == 2) haySlot2 = true;
+            }
+
+            // Solo hacer join si ya hay un slot 2 activo (partida en curso)
+            // o si hay slot1 Y slot2 — significa ambos ya estaban conectados
+            if (haySlot1 && haySlot2)
                 join = true;
 
-            if (st.posiciones.Length != 0) //Unirse a partida cargada por otro jugador
-                foreach (var p in st.posiciones)
-                {
-                    if (p.slot == 1)
-                    {
-                        join = true;
-                        break;
-                    }
-                }
+            // Si solo hay slot1 → es partida guardada esperando al 2do → join = false → va por CargarYReconstruir
+        
         }
     }
 

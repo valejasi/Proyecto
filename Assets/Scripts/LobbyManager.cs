@@ -88,27 +88,31 @@ public class LobbyManager : MonoBehaviour
 
                 Servidor.StateResponse state = JsonUtility.FromJson<Servidor.StateResponse>(req.downloadHandler.text);
                 if (state?.posiciones == null) continue;
-                
-                if (state.posiciones.Length == 0)
+
+                // Contar sessionIds únicos en posiciones
+                var sessions = new System.Collections.Generic.HashSet<string>();
+                foreach (var p in state.posiciones)
+                    if (!string.IsNullOrEmpty(p.sessionId))
+                        sessions.Add(p.sessionId);
+
+                // También verificar por slot directamente
+                bool haySlot2 = false;
+                foreach (var p in state.posiciones)
+                    if (p.slot == 2) { haySlot2 = true; break; }
+
+                // Necesitamos 2 sessionIds distintos O un slot 2 explícito
+                bool dosJugadores = sessions.Count >= 2 || haySlot2;
+
+                // Para partida nueva vacía — fallback con vidas
+                if (state.posiciones.Length == 0 && state.vidas != null && state.vidas.Length >= 2)
+                    dosJugadores = true;
+
+                if (dosJugadores)
                 {
-                    if (state.vidas != null && state.vidas.Length >= 2)
-                    {
-                        clienteListo = true;
-                        SetSlotUI(textoJugador2, "Equipo Naval", "Conectado", colorNaval);
-                        StartCoroutine(ContadorInicio());
-                    }
+                    clienteListo = true;
+                    SetSlotUI(textoJugador2, "Equipo Naval", "Conectado", colorNaval);
+                    StartCoroutine(ContadorInicio());
                 }
-                else
-                    foreach (var p in state.posiciones)
-                    {
-                        if (p.slot == 2)
-                        {
-                            clienteListo = true;
-                            SetSlotUI(textoJugador2, "Equipo Naval", "Conectado", colorNaval);
-                            StartCoroutine(ContadorInicio());
-                            break;
-                        }
-                    }
             }
         }
     }

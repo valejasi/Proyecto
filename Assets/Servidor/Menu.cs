@@ -61,6 +61,10 @@ public class Menu : MonoBehaviour
 
         if (join)
             StartCoroutine(BuscarPartida());
+        else if (encontrado)
+        {
+            StartCoroutine(BuscarPartida()); 
+        }
         else
         {
             yield return StartCoroutine(srv.CargarYReconstruir());
@@ -112,6 +116,7 @@ public class Menu : MonoBehaviour
     IEnumerator CheckJoin()
     {
         join = false;
+        encontrado = false;
         string url = srv.baseUrl + "/game/state/" + codigo;
 
         using (UnityWebRequest req = UnityWebRequest.Get(url))
@@ -148,7 +153,10 @@ public class Menu : MonoBehaviour
             // o si hay slot1 Y slot2 — significa ambos ya estaban conectados
             if (haySlot1 && haySlot2)
                 join = true;
-
+            else if (haySlot1)
+            {
+                encontrado = true; 
+            }
             // Si solo hay slot1 → es partida guardada esperando al 2do → join = false → va por CargarYReconstruir
         
         }

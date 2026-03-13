@@ -10,6 +10,13 @@ public class DronNaval : DronBase
         porcentajeVision = 0.5f;     // 50%
         porcentajeVelocidad = 1f;    // 100%
         base.Start();
+        Municion m = GetComponent<Municion>();
+        if (m != null)
+        {
+            m.municionMaxima = 2;
+            m.municionActual = 2;
+            m.ActualizarUI();
+        }
     }
 
     protected override void Morir()

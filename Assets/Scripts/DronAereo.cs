@@ -12,6 +12,13 @@ public class DronAereo : DronBase
         porcentajeVision = 1f;
         porcentajeVelocidad = 0.8f;
         base.Start();
+        Municion m = GetComponent<Municion>();
+        if (m != null)
+        {
+            m.municionMaxima = 1;
+            m.municionActual = 1;
+            m.ActualizarUI();
+        }
     }
 
     protected override void Morir()

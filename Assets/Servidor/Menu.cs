@@ -66,7 +66,7 @@ public class Menu : MonoBehaviour
     IEnumerator BuscarPartida()
     {
         srv.codigoSala = codigo;
-        srv.CargarPartida();
+        yield return StartCoroutine(srv.CargarYReconstruir());
         if (string.IsNullOrEmpty(srv.codigoSala))
         {
             textoError.text = "No se pudo unir: sala no existe o código incorrecto.";

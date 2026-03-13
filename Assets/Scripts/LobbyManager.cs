@@ -91,9 +91,12 @@ public class LobbyManager : MonoBehaviour
                 
                 if (state.posiciones.Length == 0)
                 {
-                    clienteListo = true;
-                    SetSlotUI(textoJugador2, "Equipo Naval", "Conectado", colorNaval);
-                    StartCoroutine(ContadorInicio());
+                    if (state.vidas != null && state.vidas.Length >= 2)
+                    {
+                        clienteListo = true;
+                        SetSlotUI(textoJugador2, "Equipo Naval", "Conectado", colorNaval);
+                        StartCoroutine(ContadorInicio());
+                    }
                 }
                 else
                     foreach (var p in state.posiciones)

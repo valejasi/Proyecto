@@ -223,6 +223,8 @@ public partial class Servidor
                 }
             }
 
+            
+
             foreach (PositionData p in st.posiciones)
             {
                 Vector3 pos = new Vector3(p.x, p.y, p.z);
@@ -230,7 +232,9 @@ public partial class Servidor
 
                 if (muertos.Contains(p.objId)) continue;
 
-                if (p.sessionId == miSessionId)
+                bool esMio = (p.slot == miSlot);
+
+                if (esMio)
                 {
                     // Es mío
                     if (misObjetos.TryGetValue(p.objId, out Transform tMio) && tMio != null)

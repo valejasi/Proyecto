@@ -136,7 +136,28 @@ public class LobbyManager : MonoBehaviour
                 Debug.Log("State recibido: " + req.downloadHandler.text);
                 if (state?.posiciones == null) continue;
 
-                if (state.vidas != null && state.vidas.Length >= 2)
+               // Contar sessionIds únicos — necesitamos los dos jugadores con posiciones
+                var sessions = new System.Collections.Generic.HashSet<string>();
+                foreach (var p in state.posiciones)
+                    if (!string.IsNullOrEmpty(p.sessionId))
+                        sessions.Add(p.sessionId);
+
+                bool haySlot1 = false, haySlot2 = false;
+                foreach (var p in state.posiciones)
+                {
+                    if (p.slot == 1) haySlot1 = true;
+                    if (p.slot == 2) haySlot2 = true;
+                }
+
+                // Ambos jugadores tienen posiciones publicadas
+                bool dosJugadores = (sessions.Count >= 2) || (haySlot1 && haySlot2);
+
+                // Fallback partida nueva: vidas de ambos slots presentes
+                if (!dosJugadores && state.posiciones.Length == 0 
+                    && state.vidas != null && state.vidas.Length >= 2)
+                    dosJugadores = true;
+
+                if (dosJugadores)
                 {
                     StartCoroutine(ContadorInicio());
                     yield break;

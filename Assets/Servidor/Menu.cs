@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 using System.Collections;
 using Unity.VisualScripting;
-using System.Diagnostics;
 
 public class Menu : MonoBehaviour
 {
@@ -59,12 +58,8 @@ public class Menu : MonoBehaviour
         srv.codigoSala = codigo;
         yield return StartCoroutine(CheckJoin());
 
-        if (join)
+        if (join || encontrado)
             StartCoroutine(BuscarPartida());
-        else if (encontrado)
-        {
-            StartCoroutine(BuscarPartida()); 
-        }
         else
         {
             yield return StartCoroutine(srv.CargarYReconstruir());
@@ -123,21 +118,31 @@ public class Menu : MonoBehaviour
         {
             yield return req.SendWebRequest();
 
-            if (req.result != UnityWebRequest.Result.Success)
+            if (req.result != UnityWebRequest.Result.Success){
+                Debug.Log("CheckJoin: request fallido → else (CargarYReconstruir)");
                 yield break;
+            }
 
             string json = req.downloadHandler.text;
             
-            if (string.IsNullOrWhiteSpace(json) || json == "Sala no existe.") //Es un asco, pero sino da error parseando el json
+            if (string.IsNullOrWhiteSpace(json) || json == "Sala no existe.")
+            {
+                Debug.Log("CheckJoin: sala no existe → else (CargarYReconstruir)");
                 yield break;
+            }
 
             Servidor.StateResponse st = JsonUtility.FromJson<Servidor.StateResponse>(json);
-
             if (st == null)
+            {
+                Debug.Log("CheckJoin: st null → else");
                 yield break;
+            }
+
+            Debug.Log($"CheckJoin: posiciones={st.posiciones?.Length} vidas={st.vidas?.Length}");
 
             if (st.posiciones.Length == 0 && st.vidas != null)//Unirse a partida nueva
             {
+                Debug.Log("CheckJoin: partida nueva → join=true");
                 join = true;
                 yield break;
             } 
@@ -149,6 +154,8 @@ public class Menu : MonoBehaviour
                 if (p.slot == 2) haySlot2 = true;
             }
 
+            Debug.Log($"CheckJoin: haySlot1={haySlot1} haySlot2={haySlot2}");
+
             // Solo hacer join si ya hay un slot 2 activo (partida en curso)
             // o si hay slot1 Y slot2 — significa ambos ya estaban conectados
             if (haySlot1 && haySlot2)
@@ -158,7 +165,8 @@ public class Menu : MonoBehaviour
                 encontrado = true; 
             }
             // Si solo hay slot1 → es partida guardada esperando al 2do → join = false → va por CargarYReconstruir
-        
+
+            Debug.Log($"CheckJoin resultado: join={join} encontrado={encontrado}");
         }
     }
 
